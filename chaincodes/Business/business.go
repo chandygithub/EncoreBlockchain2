@@ -35,8 +35,9 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "putNewBusinessInfo" { //Inserting a New Business information
 		return putNewBusinessInfo(stub, args)
 	} else if function == "getBusinessInfo" { // To view a Business information
-		return getBusinessInfo(stub,
-			args)
+		return getBusinessInfo(stub, args)
+	} else if function == "getWalletID" {
+		return getWalletID(stub, args)
 	}
 	return shim.Success(nil)
 }
@@ -103,6 +104,40 @@ func getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	}
 	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
 	return shim.Success([]byte(jsonString))
+}
+
+func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) != 2 {
+		//fmt.Println("Required only one argument")
+		return shim.Error("Required only one argument")
+	}
+
+	parsedBusinessInfo := businessInfo{}
+	businessIDvalue, err := stub.GetState(args[0])
+	if err != nil {
+		return shim.Error("Failed to get the business information: " + err.Error())
+	} else if businessIDvalue == nil {
+		return shim.Error("No information is avalilable on this businessID " + args[0])
+	}
+
+	err = json.Unmarshal(businessIDvalue, &parsedBusinessInfo)
+	if err != nil {
+		return shim.Error("Unable to parse into the structure " + err.Error())
+	}
+
+	walletID := ""
+
+	switch args[1] {
+	case "main":
+		walletID = parsedBusinessInfo.BusinessWalletID
+	case "loan":
+		walletID = parsedBusinessInfo.BusinessLoanWalletID
+	case "liability":
+		walletID = parsedBusinessInfo.BusinessLiabilityWalletID
+	}
+
+	return shim.Success([]byte(walletID))
 }
 
 func main() {

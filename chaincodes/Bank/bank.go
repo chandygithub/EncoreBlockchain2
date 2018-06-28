@@ -12,6 +12,7 @@ type chainCode struct {
 }
 
 type bankInfo struct {
+	//bankID			  string
 	BankName              string
 	BankBranch            string
 	Bankcode              string
@@ -33,6 +34,8 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return writeBankInfo(stub, args)
 	} else if function == "getBankInfo" {
 		return getBankInfo(stub, args)
+	} else if function == "getWalletID" {
+		return getWalletID(stub, args)
 	}
 	return shim.Success([]byte("All done"))
 
@@ -76,6 +79,38 @@ func getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	x := fmt.Sprintf("%+v", bank)
 	return shim.Success([]byte(x))
+}
+
+func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 2 {
+		return shim.Error("Requird only one field")
+	}
+	bankInfoBytes, err := stub.GetState(args[0])
+	if err != nil {
+		return shim.Error("Unable to fetch the state" + err.Error())
+	}
+	if bankInfoBytes == nil {
+		return shim.Error("Data does not exist for " + args[0])
+	}
+	bank := bankInfo{}
+	err = json.Unmarshal(bankInfoBytes, &bank)
+	if err != nil {
+		return shim.Error("Uable to paser into the json format")
+	}
+
+	walletID := ""
+
+	switch args[1] {
+	case "main":
+		walletID = bank.BankWalletID
+	case "asset":
+		walletID = bank.BankAssetWalletID
+	case "charges":
+		walletID = bank.BankChargesWalletID
+	case "liability":
+		walletID = bank.BankLiabilityWalletID
+	}
+	return shim.Success([]byte(walletID))
 }
 
 func main() {

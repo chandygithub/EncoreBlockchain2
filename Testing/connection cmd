@@ -1,0 +1,37 @@
+peer chaincode install -n c1cc -v 0 -p github.com/connections/program
+
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n c1cc -v 0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+
+peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n bcc -c '{"Args":["putNewBusinessInfo","1","tata","12348901","4000000","23hhnx56s673sxx78","sdr32123d3","23rfs148b","12.4","8.09","0","1000000"]}'
+
+
+peer chaincode query -C $CHANNEL_NAME -n c1cc -c '{"Args":[]}'
+
+
+
+
+
+
+peer chaincode install -n maincc -v 0 -p github.com/fabric-samples/connections/main
+
+
+
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n maincc -v 0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+
+peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n maincc -c '{"Args":["callothercc","c1cc","cool"]}'
+
+
+peer chaincode query -C $CHANNEL_NAME -n maincc -c '{"Args":[]}'
+
+
+- ./../../hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
+
+
+
+
+
+
+
+
