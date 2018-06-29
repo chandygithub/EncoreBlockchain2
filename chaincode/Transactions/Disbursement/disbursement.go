@@ -95,16 +95,16 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	// STEP-1
 	// using FromID, get a walletID from bank structure
-	// fromID = bankID
-	fromID := args[6] // of Bank
-	//bank, err := stub.getState(fromID)
+	// bankID = bankID
+	bankID := args[6] // of Bank
+	//bank, err := stub.getState(bankID)
 	//bankFcn := "getWalletID"
-	chaincodeBankArgs := util.ToChaincodeArgs("getWalletID", fromID, "main")
-	bankResponse := stub.InvokeChaincode("bankcc", chaincodeBankArgs, "myc")
-	if bankResponse.Status != shim.OK {
-		return shim.Error(bankResponse.Message)
+	chaincodeArgs := util.ToChaincodeArgs("getWalletID", bankID, "main")
+	response := stub.InvokeChaincode("bankcc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return shim.Error(response.Message)
 	}
-	walletID := string(bankResponse.GetPayload())
+	walletID := string(response.GetPayload())
 
 	// STEP-2
 	// getting Balance from walletID
@@ -138,9 +138,9 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList := []string{args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr := strings.Join(argsList, ",")
-	chaincodeArgs := util.ToChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
-	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
+	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return shim.Error(response.Message)
 	}
@@ -153,16 +153,16 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	// STEP-1
-	// using toID, get a walletID from business structure
-	// toID = busienssID
-	toID := args[7] // of Business
+	// using bissID, get a walletID from business structure
+	// bissID = busienssID
+	bissID := args[7] // of Business
 
-	chaincodeBissArgs := util.ToChaincodeArgs("getWalletID", toID, "main")
-	bissResponse := stub.InvokeChaincode("businesscc", chaincodeBissArgs, "myc")
-	if bissResponse.Status != shim.OK {
-		return shim.Error(bankResponse.Message)
+	chaincodeArgs = util.ToChaincodeArgs("getWalletID", bissID, "main")
+	response = stub.InvokeChaincode("businesscc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return shim.Error(response.Message)
 	}
-	walletID = string(bissResponse.GetPayload())
+	walletID = string(response.GetPayload())
 
 	// STEP-2
 	// getting Balance from walletID
@@ -211,15 +211,15 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	// STEP-1
-	// using toID, get a walletID from biss structure
-	// fromID = toID
-	toID = args[7] // of Bank
-	chaincodeBissArgs = util.ToChaincodeArgs("getWalletID", toID, "loan")
-	bissResponse = stub.InvokeChaincode("businesscc", chaincodeBankArgs, "myc")
-	if bissResponse.Status != shim.OK {
-		return shim.Error(bankResponse.Message)
+	// using bissID, get a walletID from biss structure
+	// bankID = bissID
+	bissID = args[7] // of Bank
+	chaincodeArgs = util.ToChaincodeArgs("getWalletID", bissID, "loan")
+	response = stub.InvokeChaincode("businesscc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return shim.Error(response.Message)
 	}
-	walletID = string(bissResponse.GetPayload())
+	walletID = string(response.GetPayload())
 
 	// STEP-2
 	// getting Balance from walletID
@@ -269,16 +269,16 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	// STEP-1
 	// using FromID, get a walletID from bank structure
-	// fromID = bankID
-	fromID = args[6] // of Bank
-	//bank, err := stub.getState(fromID)
+	// bankID = bankID
+	bankID = args[6] // of Bank
+	//bank, err := stub.getState(bankID)
 	//bankFcn := "getWalletID"
-	chaincodeBankArgs = util.ToChaincodeArgs("getWalletID", fromID, "asset")
-	bankResponse = stub.InvokeChaincode("bankcc", chaincodeBankArgs, "myc")
-	if bankResponse.Status != shim.OK {
-		return shim.Error(bankResponse.Message)
+	chaincodeArgs = util.ToChaincodeArgs("getWalletID", bankID, "asset")
+	response = stub.InvokeChaincode("bankcc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return shim.Error(response.Message)
 	}
-	walletID = string(bankResponse.GetPayload())
+	walletID = string(response.GetPayload())
 
 	// STEP-2
 	// getting Balance from walletID
