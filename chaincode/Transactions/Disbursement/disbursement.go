@@ -114,7 +114,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if walletResponse.Status != shim.OK {
 		return shim.Error(walletResponse.Message)
 	}
-	openBalString := strconv.Itoa(int(walletResponse.Payload[0]))
+	openBalString := string(walletResponse.Payload[:])
 	openBal, err := strconv.ParseInt(openBalString, 10, 64)
 	if err != nil {
 		return shim.Error("Error in converting the balance")
