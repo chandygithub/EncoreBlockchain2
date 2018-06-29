@@ -14,3 +14,9 @@ WALLET:
     peer chaincode invoke -n walletcc -c '{"Args":["newWallet","sdr3cfgtdui3","1000"]}' -C myc                      // bank asset
 
 
+TRANSACTION:
+
+    peer chaincode invoke -n txncc -c '{"Args":["newTxnInfo","1txn","disbursement","23/04/2018","loan123","inst456","300","1bank","1bus","pragadeesh","v7b9h"]}' -C myc
+
+
+
