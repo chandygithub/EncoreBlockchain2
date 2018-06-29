@@ -146,7 +146,6 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//#####################################################################################################################
 	//Calling for updating Business Main_Wallet
@@ -204,7 +203,6 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//####################################################################################################################
 	//Calling for updating Business Loan_Wallet
@@ -261,7 +259,6 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//####################################################################################################################
 	//Calling for updating Bank Asset_Wallet
@@ -320,7 +317,6 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//return on successful transaction updation
 	return shim.Success(nil)
