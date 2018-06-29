@@ -1,6 +1,103 @@
 
 BANK:
 
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=bankcc:0 ./Bank
+
 	peer chaincode install -p chaincodedev/chaincode/Bank -n bankcc -v 0
+	peer chaincode instantiate -n bankcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+BUSINESS:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=businesscc:0 ./Business
+
+	peer chaincode install -p chaincodedev/chaincode/Business -n businesscc -v 0
+	peer chaincode instantiate -n businesscc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+INSTRUMENTS:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=instrumentcc:0 ./Instruments
+
+	peer chaincode install -p chaincodedev/chaincode/Instruments -n instrumentcc -v 0
+	peer chaincode instantiate -n instrumentcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+LOAN:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=loancc:0 ./Loan
+
+	peer chaincode install -p chaincodedev/chaincode/Loan -n loancc -v 0
+	peer chaincode instantiate -n loancc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+LOAN_BALANCE:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=loanbalcc:0 ./LoanBalance
+
+	peer chaincode install -p chaincodedev/chaincode/LoanBalance -n loanbalcc -v 0
+	peer chaincode instantiate -n loanbalcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+PPR:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=pprcc:0 ./PPR
+
+	peer chaincode install -p chaincodedev/chaincode/PPR -n pprcc -v 0
+	peer chaincode instantiate -n pprcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+PROGRAM:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=programcc:0 ./Progam
+
+	peer chaincode install -p chaincodedev/chaincode/Progam -n programcc -v 0
+	peer chaincode instantiate -n programcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+TRANSACTIONS:
+
+CHARGES:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=chargescc:0 ./Transactions/Charges
+
+	peer chaincode install -p chaincodedev/chaincode/Transactions/Charges -n chargescc -v 0
+	peer chaincode instantiate -n chargescc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+DISBURSEMENT:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=txncc:0 ./Transactions/Disbursement
+
+	peer chaincode install -p chaincodedev/chaincode/Transactions/Disbursement -n disbrursementcc -v 0
+	peer chaincode instantiate -n disbursementcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+TxnBALANCE:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=txnbalcc:0 ./TxnBalance
+
+	peer chaincode install -p chaincodedev/chaincode/TxnBalance -n txnbalcc -v 0
+	peer chaincode instantiate -n txnbalcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
+
+Wallet:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=walletcc:0 ./Wallet
+
+	peer chaincode install -p chaincodedev/chaincode/Wallet -n walletcc -v 0
+	peer chaincode instantiate -n walletcc -v 0 -c '{"Args":[]}' -C myc
+
+--------------------------------------------------------------------------------------------------------------
 	
 

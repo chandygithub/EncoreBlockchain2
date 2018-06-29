@@ -19,9 +19,6 @@ peer chaincode instantiate -n bankcc -v 0 -c '{"Args":[]}' -C myc
 
 peer chaincode invoke -n bankcc -c '{"Args":["writeBankInfo","1bank","kvb","chennai","40A","2333s673sxx78","sdr3cfgtdui3","23rfs6vhj148b","897vhessety","86zs0lhtd"]}' -C myc
 
-peer chaincode invoke -n bankcc -c '{"Args":["writeBankInfo","1bank","kvb","chennai","40A","2333s673sxx78","sdr3cfgtdui3","23rfs6vhj148b","897vhessety","86zs0lhtd"]}' -C myc
-
-
 
 
 ------------------------INSTALLING WALLET CHAINCODE-------------------------

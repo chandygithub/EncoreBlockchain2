@@ -165,7 +165,7 @@ func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"1", "0", args[0], args[1], args[2], walletID, openBalString, "charges", args[4], cAmtString, dAmtString, txnBalString, args[5]}
+	argsList = []string{"2", "0", args[0], args[1], args[2], walletID, openBalString, "charges", args[4], cAmtString, dAmtString, txnBalString, args[5]}
 	argsListStr = strings.Join(argsList, ",")
 	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
@@ -225,7 +225,7 @@ func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"1", "0", args[0], args[1], args[2], walletID, openBalString, "charges", args[4], cAmtString, dAmtString, txnBalString, args[5]}
+	argsList = []string{"3", "0", args[0], args[1], args[2], walletID, openBalString, "charges", args[4], cAmtString, dAmtString, txnBalString, args[5]}
 	argsListStr = strings.Join(argsList, ",")
 	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
