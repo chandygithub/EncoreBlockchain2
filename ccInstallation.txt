@@ -1,0 +1,6 @@
+
+BANK:
+
+	peer chaincode install -p chaincodedev/chaincode/Bank -n bankcc -v 0
+	
+
