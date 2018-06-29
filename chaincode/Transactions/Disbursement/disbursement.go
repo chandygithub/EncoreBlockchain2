@@ -212,9 +212,9 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	// STEP-1
 	// using toID, get a walletID from biss structure
-	// fromID = bankID
+	// fromID = toID
 	toID = args[7] // of Bank
-	chaincodeBissArgs = util.ToChaincodeArgs("getWalletID", fromID, "loan")
+	chaincodeBissArgs = util.ToChaincodeArgs("getWalletID", toID, "loan")
 	bissResponse = stub.InvokeChaincode("businesscc", chaincodeBankArgs, "myc")
 	if bissResponse.Status != shim.OK {
 		return shim.Error(bankResponse.Message)
