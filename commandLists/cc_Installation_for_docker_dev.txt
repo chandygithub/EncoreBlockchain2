@@ -1,3 +1,7 @@
+docker exec -it chaincode bash
+docker exec -it cli bash
+
+
 
 BANK:
 
@@ -63,6 +67,11 @@ PROGRAM:
 --------------------------------------------------------------------------------------------------------------
 
 TRANSACTIONS:
+
+	CORE_PEER_ADDRESS=peer:7052 CORE_CHAINCODE_ID_NAME=chargescc:0 ./Transactions/transactions
+	
+	peer chaincode install -p chaincode/Transactions/ -n txncc -v 0
+	peer chaincode instantiate -n txncc -v 0 -c '{"Args":[]}' -C myc
 
 CHARGES:
 

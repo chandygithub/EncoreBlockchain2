@@ -31,33 +31,35 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "writeBankInfo" {
-		return writeBankInfo(stub, args)
+		return c.writeBankInfo(stub, args)
 	} else if function == "getBankInfo" {
-		return getBankInfo(stub, args)
+		return c.getBankInfo(stub, args)
 	} else if function == "getWalletID" {
-		return getWalletID(stub, args)
+		return c.getWalletID(stub, args)
 	}
-	return shim.Success([]byte("All done"))
+	return shim.Error("Invalid Smart Contract function name.")
 
 }
 
-func writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 9 {
-		return shim.Error("Invalid number of arguments")
+		return shim.Error("Invalid number of arguments for writing bank info")
 	}
 	//args[0] -> bankID
-	bank := bankInfo{args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]}
+	var bank = bankInfo{args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]}
+
 	bankBytes, err := json.Marshal(bank)
 	if err != nil {
 		return shim.Error("Unable to Marshal the json file " + err.Error())
 	}
 	err = stub.PutState(args[0], bankBytes)
 
-	return shim.Success([]byte("Succefully written into the ledger"))
+	fmt.Println("Successfully Written into the ledger")
+	return shim.Success(nil)
 }
 
-func getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Requird only one field")
@@ -81,7 +83,7 @@ func getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success([]byte(x))
 }
 
-func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 2 {
 		return shim.Error("Requird only one field")
 	}

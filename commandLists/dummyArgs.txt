@@ -1,12 +1,23 @@
 BANK:
 
+
+    peer chaincode install -n bankcc -v 1.0 -p github.com/chaincode/Bank/
+
+
+
     peer chaincode invoke -n bankcc -c '{"Args":["writeBankInfo","1bank","kvb","chennai","40A","2333s673sxx78","sdr3cfgtdui3","23rfs6vhj148b","897vhessety","86zs0lhtd"]}' -C myc
 
 BUSINESSS:
 
+    peer chaincode install -n businesscc -v 1.0 -p github.com/chaincode/Business/
+
+
     peer chaincode invoke -n businesscc -c '{"Args":["putNewBusinessInfo","1bus","tata","12348901","4000000","23hhnx56s673sxx78","sdr32123d3","23rfs148b","12.4","8.09","0","1000000"]}' -C myc
 
 WALLET:
+
+    peer chaincode install -n walletcc -v 1.0 -p github.com/chaincode/Wallet/
+
 
     peer chaincode invoke -n walletcc -c '{"Args":["newWallet","23hhnx56s673sxx78","1000"]}' -C myc                 // business main
     peer chaincode invoke -n walletcc -c '{"Args":["newWallet","sdr32123d3","1000"]}' -C myc                        // business loan
@@ -15,6 +26,9 @@ WALLET:
 
 
 TRANSACTION:
+
+    peer chaincode install -n txncc -v 1.0 -p github.com/chaincode/Transactions/
+
 
     peer chaincode invoke -n txncc -c '{"Args":["newTxnInfo","1txn","disbursement","23/04/2018","loan123","inst456","300","1bank","1bus","pragadeesh","v7b9h"]}' -C myc
 
