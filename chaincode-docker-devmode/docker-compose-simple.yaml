@@ -59,7 +59,8 @@ services:
     volumes:
         - /var/run/:/host/var/run/
         - ./msp:/etc/hyperledger/msp
-        - ./../chaincodes:/opt/gopath/src/chaincodedev/chaincode
+        - ./../chaincode:/opt/gopath/src/chaincode
+        - ./../../../go/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
         - ./:/opt/gopath/src/chaincodedev/
     depends_on:
       - orderer
@@ -82,7 +83,8 @@ services:
     volumes:
         - /var/run/:/host/var/run/
         - ./msp:/etc/hyperledger/msp
-        - ./../chaincodes:/opt/gopath/src/chaincode
+        - ./../chaincode:/opt/gopath/src/chaincode
+        - ./../../../go/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
     depends_on:
       - orderer
       - peer
