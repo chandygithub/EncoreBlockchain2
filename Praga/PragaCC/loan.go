@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -36,26 +38,19 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "newLoanInfo" {
-		return c.newLoanInfo(stub, args)
+		return newLoanInfo(stub, args)
 	} else if function == "getLoanInfo" {
-		return c.getLoanInfo(stub, args)
+		return getLoanInfo(stub, args)
 	} else if function == "updateLoanInfo" {
-		return c.updateLoanInfo(stub, args)
+		return updateLoanInfo(stub, args)
 	}
 	return shim.Error("No function named " + function + " in Loan")
 }
 
-func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func newLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 12 {
-		return shim.Error("Invalid number of arguments for loan")
-	}
-
-	//CHECK IF ALREADY EXISTS
-	ifExists, err := stub.GetState(args[0])
-	if ifExists != nil {
-		fmt.Println(ifExists)
-		return shim.Error("LoanId " + args[0] + " exits. Cannot create new ID")
+		return shim.Error("Invalid number of arguments")
 	}
 
 	// UNCOMMENT THIS WHILE ALL THE CHAINCODES ARE LINKED
@@ -82,12 +77,12 @@ func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 	sStr := sDateStr + "T" + sTime
 
 	//SanctionDate ->sDate
-	sDate, err := time.Parse("02/01/06T15:04:05", sStr)
+	sDate, err := time.Parse("02/01/2006T15:04:05", sStr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	roi, err := strconv.ParseFloat(args[7], 64)
+	roi, err := strconv.ParseFloat(args[7], 32)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -106,7 +101,7 @@ func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 	vStr := vDateStr + "T" + vTime
 
 	//ValueDate ->vDate
-	vDate, err := time.Parse("02/01/06T15:04:05", vStr)
+	vDate, err := time.Parse("02/01/2006T15:04:05", vStr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -131,18 +126,24 @@ func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 		return shim.Error("Error in parsing int in newLoanInfo:" + err.Error())
 	}
 
+	ifExists, err := stub.GetState(args[0])
+	if ifExists != nil {
+		fmt.Println(ifExists)
+		return shim.Error("LoanId " + args[0] + " exits. Cannot create new ID")
+	}
+
 	loan := loanInfo{args[1], args[2], args[3], sAmt, sDate, args[6], roi, dDate, vDate, loanStatusValuesLower, loanBalanceString}
 	loanBytes, err := json.Marshal(loan)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	stub.PutState(args[0], loanBytes)
-	return shim.Success([]byte("Added loan to the leger with ID: " + args[0]))
+	return shim.Success(nil)
 }
 
-func (c *chainCode) getLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Invalid number of arguments")
+		return shim.Error("Invalid number of arguments in getLoanInfo")
 	}
 
 	loanBytes, err := stub.GetState(args[0])
@@ -158,18 +159,24 @@ func (c *chainCode) getLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 		return shim.Error(err.Error())
 	}
 	loanString := fmt.Sprintf("%+v", loan)
-
-	//sanctionString := strconv.FormatInt(loan.SanctionAmt, 10)
-	//loanStatus := loan.LoanStatus
-
+	fmt.Printf("Loan Info:%s\n ", loanString)
+	sanctionString := strconv.FormatInt(loan.SanctionAmt, 10)
+	loanStatus := loan.LoanStatus
 	// joining sacntion string and loan status
-
-	return shim.Success([]byte(loanString))
+	var xString bytes.Buffer
+	xString.WriteString(sanctionString)
+	xString.WriteString(",")
+	xString.WriteString(loanStatus)
+	fmt.Println("args:", xString.String())
+	fmt.Println("Type:", reflect.TypeOf(xString.String()))
+	fmt.Println("Returning the values")
+	return shim.Success([]byte(xString.String()))
 }
 
-func (c *chainCode) updateLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func updateLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 3 {
-		return shim.Error("Invalid number of arguments in updateLoanInfo (required:3)")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in updateLoanInfo (required:3) given:" + xLenStr)
 	}
 
 	loanBytes, err := stub.GetState(args[0])
@@ -190,15 +197,11 @@ func (c *chainCode) updateLoanInfo(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Unable to parse int in updateLoanInfo:" + err.Error())
 	}
 
-	loanBytes, err = json.Marshal(loan)
-	if err != nil {
-		return shim.Error("error in marshalling: " + err.Error())
-	}
+	loanBytes, _ = json.Marshal(loan)
 	err = stub.PutState(args[0], loanBytes)
 	if err != nil {
 		return shim.Error("Error in loan updation " + err.Error())
 	}
-
 	return shim.Success([]byte("Successfully updated loan"))
 }
 

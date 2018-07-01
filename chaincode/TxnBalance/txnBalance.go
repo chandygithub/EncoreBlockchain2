@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -37,31 +36,34 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 	if function == "putTxnInfo" { //Inserting a New Business information
-		return putTxnInfo(stub, args)
+		return c.putTxnBalInfo(stub, args)
 	} else if function == "getTxnInfo" { // To view a Business information
-		return getTxnInfo(stub, args)
+		return c.getTxnBalInfo(stub, args)
 	}
 	return shim.Success(nil)
 }
 
-func putTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) == 1 {
 		args = strings.Split(args[0], ",")
 	}
 	if len(args) != 13 {
-		return shim.Error("Invalid number of arguments. Needed 13 arguments")
+		return shim.Error("Invalid number of arguments for txnBal. Needed 13 arguments")
+	}
+
+	ifExists, err := stub.GetState(args[0])
+	if ifExists != nil {
+		return shim.Error("TxnBalanceId " + args[0] + " exits. Cannot create new ID")
 	}
 
 	//TxnDate ->txnDate
 	txnDate, err := time.Parse("02/01/06", args[2])
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("err in txndate " + err.Error())
 	}
 
 	openBal, err := strconv.ParseInt(args[6], 10, 64)
 	if err != nil {
-		fmt.Println(reflect.TypeOf(args[6]))
-		fmt.Println("Above is the type")
 		return shim.Error("err in openbal " + err.Error())
 	}
 
@@ -85,22 +87,22 @@ func putTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	amt, err := strconv.ParseInt(args[8], 10, 64)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("err in amt" + err.Error())
 	}
 
 	cAmt, err := strconv.ParseInt(args[9], 10, 64)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("err in camt" + err.Error())
 	}
 
 	dAmt, err := strconv.ParseInt(args[10], 10, 64)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("err in damt " + err.Error())
 	}
 
 	txnBal, err := strconv.ParseInt(args[11], 10, 64)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("err in txnbal " + err.Error())
 	}
 
 	txnBalance := txnBalanceInfo{args[1], txnDate, args[3], args[4], args[5], openBal, txnTypeLower, amt, cAmt, dAmt, txnBal, args[12]}
@@ -112,11 +114,12 @@ func putTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	fmt.Printf("Succefully wrote txnID %s into the ledger\n", args[0])
 	return shim.Success(nil)
 
 }
 
-func getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) getTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Required only one argument")
 	}

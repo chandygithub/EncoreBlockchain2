@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -26,14 +27,6 @@ type transactionInfo struct {
 	PprID   string    //args[9]
 }
 
-func toChaincodeArgs(args ...string) [][]byte {
-	bargs := make([][]byte, len(args))
-	for i, arg := range args {
-		bargs[i] = []byte(arg)
-	}
-	return bargs
-}
-
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
@@ -42,16 +35,17 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "newTxnInfo" {
-		return c.newTxnInfo(stub, args)
+		return newTxnInfo(stub, args)
 	} else if function == "getTxnInfo" {
-		return c.getTxnInfo(stub, args)
+		return getTxnInfo(stub, args)
 	}
 	return shim.Success(nil)
 }
 
-func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 10 {
-		return shim.Error("Invalid number of arguments for transaction")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in newTxnInfo(transactions) (required:10) given: " + xLenStr)
 	}
 
 	tTypeValues := map[string]bool{
@@ -91,17 +85,18 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 
 	case "disbursement":
 		argsStr := strings.Join(args, ",")
-		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
+		chaincodeArgs := util.ToChaincodeArgs("newDisbInfo", argsStr)
 		fmt.Println("calling the disbursement chaincode")
 		response := stub.InvokeChaincode("disbursementcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error(response.Message)
 		}
+		//chaincodeArgs = util.ToChaincodeArgs("updateLoanBal",)
 
 	case "charges":
 		argsStr := strings.Join([]string{args[2], args[3], args[4], args[6], args[7], args[5], args[8], args[1]}, ",")
 		fmt.Println("the Charges arguments: " + argsStr)
-		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
+		chaincodeArgs := util.ToChaincodeArgs("putTxnInfo", argsStr)
 		fmt.Println("calling the charges chaincode")
 		response := stub.InvokeChaincode("chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
@@ -116,9 +111,9 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	return shim.Success(nil)
 }
 
-func (c *chainCode) getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Need only one argument for getting txn info")
+		return shim.Error("Invalid number of arguments")
 	}
 
 	txnBytes, err := stub.GetState(args[0])

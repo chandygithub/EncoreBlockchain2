@@ -32,41 +32,34 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "putNewBusinessInfo" { //Inserting a New Business information
-		return c.putNewBusinessInfo(stub, args)
-	} else if function == "getBusinessInfo" { // To view a Business information
-		return c.getBusinessInfo(stub, args)
+	if function == "putNewBusinessInfo" {
+		return putNewBusinessInfo(stub, args)
+	} else if function == "getBusinessInfo" {
+		return getBusinessInfo(stub, args)
 	} else if function == "getWalletID" {
-		return c.getWalletID(stub, args)
+		return getWalletID(stub, args)
 	}
-	return shim.Error("No function named " + function + " in Loan")
+	return shim.Error("No function named " + function + " in Business")
 }
 
-func (c *chainCode) putNewBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func putNewBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 11 {
 		return shim.Error("Invalid number of arguments. Needed 11 arguments")
-	}
-
-	//CHECKING IF ALREADY EXISTS
-	ifExists, err := stub.GetState(args[0])
-	if ifExists != nil {
-		fmt.Println(ifExists)
-		return shim.Error("BusinessId " + args[0] + " exits. Cannot create new ID")
 	}
 
 	businessLimitConv, err := strconv.ParseInt(args[3], 10, 64)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	// CONVERTING STRING INTO 64 BIT 2 CONVERTION
-	maxROIconvertion, err := strconv.ParseFloat(args[7], 64)
+
+	maxROIconvertion, err := strconv.ParseFloat(args[7], 32)
 	if err != nil {
 		fmt.Printf("Invalid Maximum ROI: %s\n", args[7])
 		return shim.Error(err.Error())
 	}
 
-	minROIconvertion, err := strconv.ParseFloat(args[8], 64)
+	minROIconvertion, err := strconv.ParseFloat(args[8], 32)
 	if err != nil {
 		fmt.Printf("Invalid Minimum ROI: %s\n", args[8])
 		return shim.Error(err.Error())
@@ -82,21 +75,26 @@ func (c *chainCode) putNewBusinessInfo(stub shim.ChaincodeStubInterface, args []
 		fmt.Printf("Invalid business exposure: %s\n", args[10])
 	}
 
-	//MAKING THE JSON STRUCTURE
+	ifExists, err := stub.GetState(args[0])
+	if ifExists != nil {
+		fmt.Println(ifExists)
+		return shim.Error("BusinessId " + args[0] + " exits. Cannot create new ID")
+	}
+
 	newInfo := &businessInfo{args[1], args[2], businessLimitConv, args[4], args[5], args[6], maxROIconvertion, minROIconvertion, numOfPrograms, businessExposureConv}
 	newInfoBytes, _ := json.Marshal(newInfo)
 	err = stub.PutState(args[0], newInfoBytes) // businessID = args[0]
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success([]byte("Successfully added buissness instance to the ledger"))
+	return shim.Success(nil)
 }
 
-func (c *chainCode) getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
-		//fmt.Println("Required only one argument")
-		return shim.Error("Required only one argument for getting business info")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in getBusinessInfo (required:1) given:" + xLenStr)
 	}
 
 	parsedBusinessInfo := businessInfo{}
@@ -109,18 +107,18 @@ func (c *chainCode) getBusinessInfo(stub shim.ChaincodeStubInterface, args []str
 
 	err = json.Unmarshal(businessIDvalue, &parsedBusinessInfo)
 	if err != nil {
-		return shim.Error("Unable to parse into the structure " + err.Error())
+		return shim.Error("Unable to parse businessInfo into the structure " + err.Error())
 	}
 	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
 	fmt.Printf("Business Info: %s\n", jsonString)
-	return shim.Success([]byte(jsonString))
+	return shim.Success(nil)
 }
 
-func (c *chainCode) getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 2 {
-		//fmt.Println("Required only one argument")
-		return shim.Error("Required only one argument")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in getWalletId(business) (required:2) given:" + xLenStr)
 	}
 
 	parsedBusinessInfo := businessInfo{}
@@ -136,7 +134,7 @@ func (c *chainCode) getWalletID(stub shim.ChaincodeStubInterface, args []string)
 		return shim.Error("Unable to parse into the structure " + err.Error())
 	}
 
-	var walletID string
+	walletID := ""
 
 	switch args[1] {
 	case "main":
@@ -153,6 +151,7 @@ func (c *chainCode) getWalletID(stub shim.ChaincodeStubInterface, args []string)
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Printf("Error starting Simple chaincode: %s\n", err)
+		fmt.Printf("Error starting Business chaincode: %s\n", err)
 	}
+
 }

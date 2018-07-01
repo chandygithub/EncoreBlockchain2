@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -27,51 +28,43 @@ type loanBalanceInfo struct {
 	LoanStatus string
 }
 
-func toChaincodeArgs(args ...string) [][]byte {
-	bargs := make([][]byte, len(args))
-	for i, arg := range args {
-		bargs[i] = []byte(arg)
-	}
-	return bargs
-}
-
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
 
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
-	if function == "putLoanBalInfo" { //Inserting a New Business information
-		return c.putLoanBalInfo(stub, args)
-	} else if function == "getLoanBalInfo" { // To view a Business information
-		return c.getLoanBalInfo(stub, args)
+	if function == "putLoanBalInfo" {
+		return putLoanBalInfo(stub, args)
+	} else if function == "getLoanBalInfo" {
+		return getLoanBalInfo(stub, args)
 	} else if function == "updateLoanBal" {
-		return c.updateLoanBal(stub, args)
+		return updateLoanBal(stub, args)
 	}
 	return shim.Error("No function named " + function + " in loanBalance")
 }
 
-func (c *chainCode) putLoanBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func putLoanBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 10 {
-		return shim.Error("Invalid number of arguments. Needed 10 arguments")
+		return shim.Error("Invalid number of arguments in putLoanBalInfo. Needed 10 arguments")
 	}
 
 	//TxnDate -> transDate
-	transDate, err := time.Parse("02/01/06", args[3])
+	transDate, err := time.Parse("02/01/2006", args[3])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	txnTypeValues := map[string]bool{
 		"disbursement":  true,
-		"chargse":       true,
+		"charges":       true,
 		"payment":       true,
 		"other changes": true,
 	}
 
 	txnTypeLower := strings.ToLower(args[4])
 	if !txnTypeValues[txnTypeLower] {
-		return shim.Error("Invalid Transaction type")
+		return shim.Error("Invalid Transaction type " + txnTypeLower)
 	}
 
 	openBal, err := strconv.ParseInt(args[5], 10, 64)
@@ -106,7 +99,7 @@ func (c *chainCode) putLoanBalInfo(stub shim.ChaincodeStubInterface, args []stri
 
 	loanStatusLower := strings.ToLower(args[9])
 	if !loanStatusValues[loanStatusLower] {
-		return shim.Error("Invalid Loan Status type: " + loanStatusLower)
+		return shim.Error("Invalid Loan Status type " + loanStatusLower)
 	}
 
 	loanBalance := loanBalanceInfo{args[1], args[2], transDate, txnTypeLower, openBal, cAmt, dAmt, loanBal, loanStatusLower}
@@ -120,9 +113,10 @@ func (c *chainCode) putLoanBalInfo(stub shim.ChaincodeStubInterface, args []stri
 
 }
 
-func (c *chainCode) getLoanBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getLoanBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Required only one argument in loanBalanceCC : getLoanBalInfo")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Required only one argument in getLoanBalInfo, given:" + xLenStr)
 	}
 
 	loanBalance := loanBalanceInfo{}
@@ -141,7 +135,7 @@ func (c *chainCode) getLoanBalInfo(stub shim.ChaincodeStubInterface, args []stri
 	return shim.Success([]byte(jsonString))
 }
 
-func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func updateLoanBal(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	/*
 			// From Disbursement
 		*LoanID  -> args[1]
@@ -165,7 +159,7 @@ func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []strin
 		return shim.Error("Required 6 arguments in updateLoanBal from Disbursement")
 	}
 
-	chaincodeArgs := toChaincodeArgs("getLoanInfo", args[1])
+	chaincodeArgs := util.ToChaincodeArgs("getLoanInfo", args[1])
 	fmt.Println("calling the other chaincode")
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -227,7 +221,7 @@ func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []strin
 	fmt.Println("written into loan balance ledger")
 
 	fmt.Printf("Status:%s\n", status)
-	chaincodeArgs = toChaincodeArgs("updateLoanInfo", args[1], status, loanBalString)
+	chaincodeArgs = util.ToChaincodeArgs("updateLoanInfo", args[1], status, loanBalString)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
