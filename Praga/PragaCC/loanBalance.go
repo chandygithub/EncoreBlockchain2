@@ -186,7 +186,7 @@ func updateLoanBal(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	var status string
 	status = loanArgs[1] // status of the current loan
 	loanBal := openBal - DAmt + CAmt
-	loanBalString := strconv.FormatInt(loanBal, 64)
+	loanBalString := strconv.FormatInt(loanBal, 10)
 	if status == "sanctioned" || status == "partly disbursed" {
 
 		if openBal-loanBal == 0 {

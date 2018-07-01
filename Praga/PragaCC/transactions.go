@@ -77,9 +77,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	err = stub.PutState(args[0], txnBytes)
 	if err != nil {
 		return shim.Error("Cannot write into ledger the transactino details")
-	} else {
-		fmt.Println("Successfully inserted the transaction into the ledger")
 	}
+	fmt.Println("Successfully inserted the transaction into the ledger")
 
 	switch tTypeLower {
 
