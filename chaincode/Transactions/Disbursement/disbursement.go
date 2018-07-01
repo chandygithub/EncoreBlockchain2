@@ -6,12 +6,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 type chainCode struct {
+}
+
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -22,14 +29,14 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "newTxnInfo" {
-		return newTxnInfo(stub, args)
+		return c.newTxnInfo(stub, args)
 	}
 	return shim.Error("no function named" + function + "found in disbursement")
 }
 
-func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 9 {
-		return shim.Error("Invalid number of arguments")
+func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 10 {
+		return shim.Error("Invalid number of arguments for disbursement")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +60,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString := "0"
 	dAmtString := args[5]
 
-	walletID, openBalString, txnBalString, err := getWalletInfo(stub, args[6], "main", "bankcc", cAmtString, dAmtString)
+	walletID, openBalString, txnBalString, err := c.getWalletInfo(stub, args[6], "main", "bankcc", cAmtString, dAmtString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -61,7 +68,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList := []string{args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr := strings.Join(argsList, ",")
-	chaincodeArgs := util.ToChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs := toChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -77,7 +84,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = args[5]
 	dAmtString = "0"
 
-	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[7], "main", "businesscc", cAmtString, dAmtString)
+	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[7], "main", "businesscc", cAmtString, dAmtString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -85,7 +92,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"1", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -101,7 +108,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = args[5]
 	dAmtString = "0"
 
-	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[7], "loan", "businesscc", cAmtString, dAmtString)
+	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[7], "loan", "businesscc", cAmtString, dAmtString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -109,7 +116,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -125,7 +132,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = args[5]
 	dAmtString = "0"
 
-	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[6], "asset", "bankcc", cAmtString, dAmtString)
+	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[6], "asset", "bankcc", cAmtString, dAmtString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -133,7 +140,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -147,13 +154,13 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success(nil)
 }
 
-func getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walletType string, ccName string, cAmtStr string, dAmtStr string) (string, string, string, error) {
+func (c *chainCode) getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walletType string, ccName string, cAmtStr string, dAmtStr string) (string, string, string, error) {
 
 	// STEP-1
 	// using FromID, get a walletID from bank structure
 	// bankID = bankID
 
-	chaincodeArgs := util.ToChaincodeArgs("getWalletID", participantID, walletType)
+	chaincodeArgs := toChaincodeArgs("getWalletID", participantID, walletType)
 	response := stub.InvokeChaincode("bankcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return "", "", "", errors.New(response.Message)
@@ -163,7 +170,7 @@ func getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walle
 	// STEP-2
 	// getting Balance from walletID
 	// walletFcn := "getWallet"
-	walletArgs := util.ToChaincodeArgs("getWallet", walletID)
+	walletArgs := toChaincodeArgs("getWallet", walletID)
 	walletResponse := stub.InvokeChaincode("walletcc", walletArgs, "myc")
 	if walletResponse.Status != shim.OK {
 		return "", "", "", errors.New(walletResponse.Message)
@@ -189,7 +196,7 @@ func getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walle
 	// STEP-3
 	// update wallet of ID walletID here, and write it to the wallet_ledger
 	// walletFcn := "updateWallet"
-	walletArgs = util.ToChaincodeArgs("updateWallet", walletID, string(txnBal))
+	walletArgs = toChaincodeArgs("updateWallet", walletID, string(txnBal))
 	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
 	if walletResponse.Status != shim.OK {
 		return "", "", "", errors.New(walletResponse.Message)

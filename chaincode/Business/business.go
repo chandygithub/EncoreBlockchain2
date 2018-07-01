@@ -87,7 +87,7 @@ func getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	if len(args) != 1 {
 		//fmt.Println("Required only one argument")
-		return shim.Error("Required only one argument")
+		return shim.Error("Required only one argument for getting business info")
 	}
 
 	parsedBusinessInfo := businessInfo{}

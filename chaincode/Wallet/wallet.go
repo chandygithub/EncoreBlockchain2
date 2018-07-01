@@ -35,7 +35,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func newWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 2 {
-		return shim.Error("Invalid number of arguments")
+		return shim.Error("Invalid number of arguments, need ID and amt")
 	}
 
 	bal64, err := strconv.ParseInt(args[1], 10, 64)
@@ -50,7 +50,7 @@ func newWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 func getWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Invalid number of arguments")
+		return shim.Error("Need only wallet ID to get wallet info")
 	}
 	balBytes, err := stub.GetState(args[0])
 	if err != nil {

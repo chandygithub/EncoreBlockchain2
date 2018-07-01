@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -27,6 +26,14 @@ type transactionInfo struct {
 	PprID   string    //args[9]
 }
 
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
+}
+
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
@@ -43,8 +50,8 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 9 {
-		return shim.Error("Invalid number of arguments")
+	if len(args) != 10 {
+		return shim.Error("Invalid number of arguments for transaction")
 	}
 
 	tTypeValues := map[string]bool{
@@ -84,7 +91,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	case "disbursement":
 		argsStr := strings.Join(args, ",")
-		chaincodeArgs := util.ToChaincodeArgs("putTxnInfo", argsStr)
+		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
 		fmt.Println("calling the disbursement chaincode")
 		response := stub.InvokeChaincode("disbursementcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
@@ -94,7 +101,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	case "charges":
 		argsStr := strings.Join([]string{args[2], args[3], args[4], args[6], args[7], args[5], args[8], args[1]}, ",")
 		fmt.Println("the Charges arguments: " + argsStr)
-		chaincodeArgs := util.ToChaincodeArgs("putTxnInfo", argsStr)
+		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
 		fmt.Println("calling the charges chaincode")
 		response := stub.InvokeChaincode("chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
@@ -111,7 +118,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 func getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Invalid number of arguments")
+		return shim.Error("Need only one argument for getting txn info")
 	}
 
 	txnBytes, err := stub.GetState(args[0])

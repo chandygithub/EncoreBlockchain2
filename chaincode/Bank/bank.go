@@ -62,7 +62,7 @@ func (c *chainCode) writeBankInfo(stub shim.ChaincodeStubInterface, args []strin
 func (c *chainCode) getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
-		return shim.Error("Requird only one field")
+		return shim.Error("Requird only one field for getting bank info")
 	}
 
 	bankInfoBytes, err := stub.GetState(args[0])
