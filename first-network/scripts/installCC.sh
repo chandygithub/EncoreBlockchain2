@@ -27,3 +27,13 @@ echo "installing txncc"
 peer chaincode install -n txncc -v 1.0 -p github.com/chaincode/Transactions/
 echo "instantiating txncc"
 peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n txncc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+echo "installing loancc"
+peer chaincode install -n loancc -v 1.0 -p github.com/chaincode/Loan/
+echo "instantiating loancc"
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n loancc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+echo "installing loanbalcc"
+peer chaincode install -n loanbalcc -v 1.0 -p github.com/chaincode/LoanBalance/
+echo "instantiating loanbalcc"
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n loanbalcc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
