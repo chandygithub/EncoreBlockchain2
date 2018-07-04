@@ -15,18 +15,18 @@ type chainCode struct {
 }
 
 type txnBalanceInfo struct {
-	TxnID      string
-	TxnDate    time.Time
-	LoanID     string
-	InsID      string
-	WalletID   string
-	OpeningBal int64
-	TxnType    string
-	Amt        int64
-	CAmt       int64
-	DAmt       int64
-	TxnBal     int64
-	By         string
+	TxnID      string    `json:"TxnID"`
+	TxnDate    time.Time `json:"TxnDate"`
+	LoanID     string    `json:"LoanID"`
+	InsID      string    `json:"InsID"`
+	WalletID   string    `json:"WalletID"`
+	OpeningBal int64     `json:"OpeningBalance"`
+	TxnType    string    `json:"TxnType"`
+	Amt        int64     `json:"Amount"`
+	CAmt       int64     `json:"CreditAmount"`
+	DAmt       int64     `json:"DebitAmount"`
+	TxnBal     int64     `json:"TxnBalance"`
+	By         string    `json:"By"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
