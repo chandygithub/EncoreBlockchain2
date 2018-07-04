@@ -51,7 +51,7 @@ peer chaincode install -n txncc -v 1.0 -p github.com/chaincode/Transactions/
 
 peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n txncc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
 
-peer chaincode invoke -o orderer.example.com:7050  --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem  -C myc -n txncc -c '{"Args":["newTxnInfo","1txn","disbursement","23/04/2018","loan123","inst456","300","1bank","1bus","pragadeesh","v7b9h"]}' -C myc
+peer chaincode invoke -o orderer.example.com:7050  --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem  -C myc -n txncc -c '{"Args":["newTxnInfo","1txn","disbursement","23/04/2018","1loan","1inst","300","1bank","1bus","pragadeesh","v7b9h"]}' -C myc
 
 
 DISBURSEMENT:
@@ -61,9 +61,32 @@ peer chaincode install -n disbursementcc -v 1.0 -p github.com/chaincode/Transact
 peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n disbursementcc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
 
 
+TDS:
+
+peer chaincode install -n tdscc -v 1.0 -p github.com/chaincode/Transactions/TDS/
+
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n tdscc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+
 TXNBALANCE:
 
 peer chaincode install -n txnbalcc -v 1.0 -p github.com/chaincode/TxnBalance/
 
 peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n txnbalcc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
 
+LOAN:
+
+peer chaincode install -n loancc -v 1.0 -p github.com/chaincode/Loan/
+
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n loancc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+peer chaincode invoke -o orderer.example.com:7050  --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem  -C myc -n loancc -c '{"Args":["newLoanInfo","1loan","1ins","1eb","1prg","900","23/04/2018:12:45:20","pragadeesh","5.6","23/10/2018","25/09/2018:20:45:01","sanctioned","900"]}' -C myc
+
+
+LOAN BALANCE
+
+peer chaincode install -n loanbalcc -v 1.0 -p github.com/chaincode/LoanBalance/
+
+peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C myc -n loanbalcc -v 1.0 -c '{"Args":[]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"
+
+peer chaincode invoke -o orderer.example.com:7050  --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem  -C myc -n loanbalcc -c '{"Args":["putLoanBalInfo","1loanbal","1loan","1txn","23/04/2018","disbursement","900","0","0","900","sanctioned"]}' -C myc

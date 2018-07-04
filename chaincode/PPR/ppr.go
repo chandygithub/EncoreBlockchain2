@@ -14,16 +14,16 @@ type chainCode struct {
 }
 
 type pprInfo struct {
-	ProgramID                         string
-	BusinessID                        string
-	Relationship                      string
-	ProgramBusinessLimit              int64
-	ProgramBusinessROI                float64
-	ProgramBusinessDiscountPeriod     int
-	ProgramBusinessDiscountPercentage float64
-	StaleDays                         int
-	RepaymentAcNo                     string
-	RepaymentWalletID                 string
+	ProgramID                         string  `json:"ProgramID"`
+	BusinessID                        string  `json:"BusinessID"`
+	Relationship                      string  `json:"Relationship"`
+	ProgramBusinessLimit              int64   `json:"ProgramBusinessLimit"`
+	ProgramBusinessROI                float64 `json:"ProgramBusinessROI"`
+	ProgramBusinessDiscountPeriod     int     `json:"ProgramBusinessDiscountPeriod"`
+	ProgramBusinessDiscountPercentage float64 `json:"ProgramBusinessDiscountPercetage"`
+	StaleDays                         int     `json:"StaleDays"`
+	RepaymentAcNo                     string  `json:"RepaymentAccountNumber"`
+	RepaymentWalletID                 string  `json:"RepaymentWalletID"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {

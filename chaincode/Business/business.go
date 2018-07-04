@@ -13,16 +13,16 @@ type chainCode struct {
 }
 
 type businessInfo struct {
-	BusinessName              string
-	BusinessAcNo              string
-	BusinessLimit             int64
-	BusinessWalletID          string //Hash
-	BusinessLoanWalletID      string
-	BusinessLiabilityWalletID string
-	MaxROI                    float64
-	MinROI                    float64
-	NumberOfPrograms          int
-	BusinessExposure          int64
+	BusinessName              string  `json:"BusinessName"`
+	BusinessAcNo              string  `json:"BusinessAcNo"`
+	BusinessLimit             int64   `json:"BusinessLimit"`
+	BusinessWalletID          string  `json:"BusinessMainWalletID"`
+	BusinessLoanWalletID      string  `json:"BusinessLoanWalletID"`
+	BusinessLiabilityWalletID string  `json:"BusinessLiabilityWalletID"`
+	MaxROI                    float64 `json:"MaxROI"`
+	MinROI                    float64 `json:"MinROI"`
+	NumberOfPrograms          int     `json:"NumberOfPrograms"`
+	BusinessExposure          int64   `json:"BusinessExposure"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -89,7 +89,8 @@ func (c *chainCode) putNewBusinessInfo(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success([]byte("Successfully added buissness instance to the ledger"))
+	fmt.Println("Successfully added buissness " + args[1] + " to the ledger")
+	return shim.Success([]byte("Successfully added buissness " + args[1] + " to the ledger"))
 }
 
 func (c *chainCode) getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {

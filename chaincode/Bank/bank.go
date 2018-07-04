@@ -13,14 +13,14 @@ type chainCode struct {
 
 type bankInfo struct {
 	//bankID			  string
-	BankName              string
-	BankBranch            string
-	Bankcode              string
-	BankWalletID          string
-	BankAssetWalletID     string
-	BankChargesWalletID   string
-	BankLiabilityWalletID string
-	TDSreceivableWalletID string
+	BankName              string `json:"BankName"`
+	BankBranch            string `json:"BankBranch"`
+	Bankcode              string `json:"BankCode"`
+	BankWalletID          string `json:"BankMainWalletID"`
+	BankAssetWalletID     string `json:"BankAssetWalletID"`
+	BankChargesWalletID   string `json:"BankChargesWalletID"`
+	BankLiabilityWalletID string `json:"BankLiabilityWalletID"`
+	TDSreceivableWalletID string `json:"TDSreceivableWalletID"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -63,8 +63,8 @@ func (c *chainCode) writeBankInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 	err = stub.PutState(args[0], bankBytes)
 
-	fmt.Println("Successfully Written into the ledger")
-	return shim.Success([]byte("Successfully Written into the ledger"))
+	fmt.Println("Successfully Written Bank" + args[1] + "into the ledger")
+	return shim.Success([]byte("Successfully Written Bank" + args[1] + "into the ledger"))
 }
 
 func (c *chainCode) getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -120,6 +120,8 @@ func (c *chainCode) getWalletID(stub shim.ChaincodeStubInterface, args []string)
 		walletID = bank.BankChargesWalletID
 	case "liability":
 		walletID = bank.BankLiabilityWalletID
+	case "tdsReceivable":
+		walletID = bank.TDSreceivableWalletID
 	}
 	return shim.Success([]byte(walletID))
 }

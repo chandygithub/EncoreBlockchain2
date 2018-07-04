@@ -35,12 +35,12 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
-	if function == "putTxnInfo" { //Inserting a New Business information
+	if function == "putTxnBalInfo" { //Inserting a New Business information
 		return c.putTxnBalInfo(stub, args)
-	} else if function == "getTxnInfo" { // To view a Business information
+	} else if function == "getTxnBalInfo" { // To view a Business information
 		return c.getTxnBalInfo(stub, args)
 	}
-	return shim.Success(nil)
+	return shim.Error("Inside txnBalcc:Invoke(), Function does not exit")
 }
 
 func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -57,14 +57,14 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	//TxnDate ->txnDate
-	txnDate, err := time.Parse("02/01/06", args[2])
+	txnDate, err := time.Parse("02/01/2006", args[2])
 	if err != nil {
-		return shim.Error("err in txndate " + err.Error())
+		return shim.Error("txnbal err in txndate " + err.Error())
 	}
 
 	openBal, err := strconv.ParseInt(args[6], 10, 64)
 	if err != nil {
-		return shim.Error("err in openbal " + err.Error())
+		return shim.Error("txnbal err in openbal " + err.Error())
 	}
 
 	txnTypeValues := map[string]bool{
@@ -82,27 +82,27 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 
 	txnTypeLower := strings.ToLower(args[7])
 	if !txnTypeValues[txnTypeLower] {
-		return shim.Error("Invalid Transaction type")
+		return shim.Error("txnbal Invalid Transaction type")
 	}
 
 	amt, err := strconv.ParseInt(args[8], 10, 64)
 	if err != nil {
-		return shim.Error("err in amt" + err.Error())
+		return shim.Error("txnbal err in amt" + err.Error())
 	}
 
 	cAmt, err := strconv.ParseInt(args[9], 10, 64)
 	if err != nil {
-		return shim.Error("err in camt" + err.Error())
+		return shim.Error("txnbal err in camt" + err.Error())
 	}
 
 	dAmt, err := strconv.ParseInt(args[10], 10, 64)
 	if err != nil {
-		return shim.Error("err in damt " + err.Error())
+		return shim.Error("txnbal err in damt " + err.Error())
 	}
 
 	txnBal, err := strconv.ParseInt(args[11], 10, 64)
 	if err != nil {
-		return shim.Error("err in txnbal " + err.Error())
+		return shim.Error("txnbal err in txnbal " + err.Error())
 	}
 
 	txnBalance := txnBalanceInfo{args[1], txnDate, args[3], args[4], args[5], openBal, txnTypeLower, amt, cAmt, dAmt, txnBal, args[12]}
@@ -112,9 +112,9 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 	err = stub.PutState(args[0], txnBalanceBytes)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("txnbal cannot write to ledger: " + err.Error())
 	}
-	fmt.Printf("Succefully wrote txnID %s into the ledger\n", args[0])
+	fmt.Println("Succefully wrote txnID " + args[0] + " into the ledger")
 	return shim.Success(nil)
 
 }

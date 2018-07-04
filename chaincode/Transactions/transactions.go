@@ -15,15 +15,15 @@ type chainCode struct {
 }
 
 type transactionInfo struct {
-	TxnType string    //args[1]
-	TxnDate time.Time //args[2]
-	LoanID  string    //args[3]
-	InsID   string    //args[4]
-	Amt     int64     //args[5]
-	FromID  string    //args[6]
-	ToID    string    //args[7]
-	By      string    //args[8]
-	PprID   string    //args[9]
+	TxnType string    `json:"TxnType"`      //args[1]
+	TxnDate time.Time `json:"TxnDate"`      //args[2]
+	LoanID  string    `json:"LoanID"`       //args[3]
+	InsID   string    `json:"InstrumentID"` //args[4]
+	Amt     int64     `json:"TxnAmount"`    //args[5]
+	FromID  string    `json:"From"`         //args[6]
+	ToID    string    `json:"To"`           //args[7]
+	By      string    `json:"By"`           //args[8]
+	PprID   string    `json:"PPR_ID"`       //args[9]
 }
 
 func toChaincodeArgs(args ...string) [][]byte {
@@ -69,22 +69,12 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	//TxnDate -> tDate
 	tDate, err := time.Parse("02/01/2006", args[2])
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("Date error, txncc: newTxnInfo, " + err.Error())
 	}
 
 	amt, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	//TODO: put it at last for redability
-	transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8], args[9]}
-	txnBytes, err := json.Marshal(transaction)
-	err = stub.PutState(args[0], txnBytes)
-	if err != nil {
-		return shim.Error("Cannot write into ledger the transactino details")
-	} else {
-		fmt.Println("Successfully inserted the transaction into the ledger")
+		return shim.Error("Error in converting amt to string in transactions:newTxnInfo(), " + err.Error())
 	}
 
 	switch tTypeLower {
@@ -96,6 +86,15 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 		response := stub.InvokeChaincode("disbursementcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error(response.Message)
+		}
+		//TODO: put it at last for redability
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8], args[9]}
+		txnBytes, err := json.Marshal(transaction)
+		err = stub.PutState(args[0], txnBytes)
+		if err != nil {
+			return shim.Error("Cannot write into ledger the transactino details")
+		} else {
+			fmt.Println("Successfully inserted the transaction " + args[0] + " into the ledger")
 		}
 
 	case "charges":

@@ -15,16 +15,16 @@ type chainCode struct {
 }
 
 type instrumentInfo struct {
-	InstrumentRefNo string
-	InstrumenDate   time.Time
-	SellBusinessID  string
-	BuyBusinsessID  string
-	InsAmount       int64
-	InsStatus       string
-	InsDueDate      time.Time
-	ProgramID       string
-	UploadBatchNo   string
-	ValueDate       time.Time
+	InstrumentRefNo   string    `json:"InstrumentRefNo"`
+	InstrumenDate     time.Time `json:"InstrumentDate"`
+	SellerBusinessID  string    `json:"SellerBusinessID"`
+	BuyerBusinsessID  string    `json:"buyerBusinessID"`
+	InstrumentAmount  int64     `json:"InstrumentAmount"`
+	InstrumentStatus  string    `json:"InstrumentStatus"`
+	InstrumentDueDate time.Time `json:"InstrumentDueDate"`
+	ProgramID         string    `json:"ProgramID"`
+	UploadBatchNo     string    `json:"UploadBatchNo"`
+	ValueDate         time.Time `json:"ValueDate"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {

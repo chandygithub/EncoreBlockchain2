@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -78,6 +79,9 @@ func (c *chainCode) getWallet(stub shim.ChaincodeStubInterface, args []string) p
 }
 
 func (c *chainCode) updateWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) == 1 {
+		args = strings.Split(args[0], ",")
+	}
 	if len(args) != 2 {
 		return shim.Error("Invalid number of arguments")
 	}

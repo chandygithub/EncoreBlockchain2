@@ -36,6 +36,8 @@ STEP 4
 
 		installCC.sh :	this'll install AND instantiate all chaincodes need for "Disbursement Transaction" ONLY
 
+		invokeCC.sh : this'll invoke all necessary ledgers
+
 	- run these two :
 
 		cd scripts/

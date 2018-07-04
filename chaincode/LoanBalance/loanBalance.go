@@ -16,15 +16,15 @@ type chainCode struct {
 }
 
 type loanBalanceInfo struct {
-	LoanID     string
-	TxnID      string
-	TxnDate    time.Time
-	TxnType    string
-	OpenBal    int64
-	CAmt       int64
-	DAmt       int64
-	LoanBal    int64
-	LoanStatus string
+	LoanID     string    `json:"LoanID"`
+	TxnID      string    `json:"TxnID"`
+	TxnDate    time.Time `json:"TxnDate"`
+	TxnType    string    `json:"TxnType"`
+	OpenBal    int64     `json:"OpenBalance"`
+	cAmt       int64     `json:"CreditAmount"`
+	dAmt       int64     `json:"DebitAmount"`
+	LoanBal    int64     `json:"LoanBalance"`
+	LoanStatus string    `json:"LoanStatus"`
 }
 
 func toChaincodeArgs(args ...string) [][]byte {
@@ -53,11 +53,11 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (c *chainCode) putLoanBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 10 {
-		return shim.Error("Invalid number of arguments. Needed 10 arguments")
+		return shim.Error("Invalid number of arguments in LoanBalance. Needed 10 arguments")
 	}
 
 	//TxnDate -> transDate
-	transDate, err := time.Parse("02/01/06", args[3])
+	transDate, err := time.Parse("02/01/2006", args[3])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -115,7 +115,7 @@ func (c *chainCode) putLoanBalInfo(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(args[0], loanBalanceBytes)
-
+	fmt.Println("Successfully add loanBalance " + args[0] + " to loanBalance Ledger")
 	return shim.Success(nil)
 
 }
@@ -161,12 +161,12 @@ func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []strin
 	if len(args) == 1 {
 		args = strings.Split(args[0], ",")
 	}
-	if len(args) != 6 {
-		return shim.Error("Required 6 arguments in updateLoanBal from Disbursement")
+	if len(args) != 7 {
+		return shim.Error("Required 7 arguments in updateLoanBal")
 	}
 
 	chaincodeArgs := toChaincodeArgs("getLoanInfo", args[1])
-	fmt.Println("calling the other chaincode")
+	fmt.Println("calling loancc from loanbalcc")
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return shim.Error(response.Message)
@@ -183,15 +183,18 @@ func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []strin
 	if err != nil {
 		return shim.Error("Error in parsing the openbalance in LoanBalance: " + err.Error())
 	}
-	CAmt := int64(0)
-	DAmt, err := strconv.ParseInt(args[5], 10, 64)
+	cAmt, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return shim.Error("Error in parsing the DAmt in LoanBalance: " + err.Error())
+		return shim.Error("Error in parsing the cAmt in LoanBalance: " + err.Error())
+	}
+	dAmt, err := strconv.ParseInt(args[6], 10, 64)
+	if err != nil {
+		return shim.Error("Error in parsing the dAmt in LoanBalance: " + err.Error())
 	}
 
 	var status string
 	status = loanArgs[1] // status of the current loan
-	loanBal := openBal - DAmt + CAmt
+	loanBal := openBal + cAmt - dAmt
 	loanBalString := strconv.FormatInt(loanBal, 10)
 	if status == "sanctioned" || status == "partly disbursed" {
 
@@ -218,8 +221,8 @@ func (c *chainCode) updateLoanBal(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	loanBalance.LoanStatus = status
-	loanBalance.CAmt = CAmt
-	loanBalance.DAmt = DAmt
+	loanBalance.cAmt = cAmt
+	loanBalance.dAmt = dAmt
 	loanBalance.LoanBal = loanBal
 
 	loanBalanceBytes, _ = json.Marshal(loanBalance)

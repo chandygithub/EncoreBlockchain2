@@ -15,20 +15,20 @@ type chainCode struct {
 }
 
 type programInfo struct {
-	ProgramName        string
-	ProgramAnchor      string
-	ProgramType        string
-	ProgramStartDate   time.Time
-	ProgramEndDate     time.Time
-	ProgramLimit       int64
-	ProgramROI         float64
-	ProgramExposure    string
-	DiscountPercentage float64
-	DiscountPeriod     int
-	SanctionAuthority  string
-	SanctionDate       time.Time
-	RepaymentAcNum     string
-	RepaymentWalletID  string //Hash
+	ProgramName        string    `json:"ProgramName"`
+	ProgramAnchor      string    `json:"ProgramAnchor"`
+	ProgramType        string    `json:"ProgramType"`
+	ProgramStartDate   time.Time `json:"ProgramStartDate"`
+	ProgramEndDate     time.Time `json:"ProgramEndDate"`
+	ProgramLimit       int64     `json:"ProgramLimit"`
+	ProgramROI         float64   `json:"ProgramROI"`
+	ProgramExposure    string    `json:"ProgramExposure"`
+	DiscountPercentage float64   `json:"DiscountPercentage"`
+	DiscountPeriod     int       `json:"DiscountPeriod"`
+	SanctionAuthority  string    `json:"SanctionAuthority"`
+	SanctionDate       time.Time `json:"SanctionDate"`
+	RepaymentAcNum     string    `json:"RepaymentAccountNumber"`
+	RepaymentWalletID  string    `json:"RepaymentWalletID"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {

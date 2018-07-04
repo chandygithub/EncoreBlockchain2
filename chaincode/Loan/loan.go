@@ -15,17 +15,17 @@ type chainCode struct {
 }
 
 type loanInfo struct {
-	InstNum            string //Instrument Number
-	ExposureBusinessID string
-	ProgramID          string
-	SanctionAmt        int64
-	SanctionDate       time.Time //with time
-	SanctionAuthority  string
-	ROI                float64
-	DueDate            time.Time
-	ValueDate          time.Time //with time
-	LoanStatus         string
-	LoanBalance        int64
+	InstNum            string    `json:"InstrumentNumber"`
+	ExposureBusinessID string    `json:"ExposureBusinessID"`
+	ProgramID          string    `json:"ProgramID"`
+	SanctionAmt        int64     `json:"SanctionAmountt"`
+	SanctionDate       time.Time `json:"SanctionDate"`
+	SanctionAuthority  string    `json:"SanctionAuthority"`
+	ROI                float64   `json:"ROI"`
+	DueDate            time.Time `json:"DueDate"`
+	ValueDate          time.Time `json:"ValueDate"`
+	LoanStatus         string    `json:"LoanStatus"`
+	LoanBalance        int64     `json:"LoanBalance"`
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -82,7 +82,7 @@ func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 	sStr := sDateStr + "T" + sTime
 
 	//SanctionDate ->sDate
-	sDate, err := time.Parse("02/01/06T15:04:05", sStr)
+	sDate, err := time.Parse("02/01/2006T15:04:05", sStr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -106,7 +106,7 @@ func (c *chainCode) newLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 	vStr := vDateStr + "T" + vTime
 
 	//ValueDate ->vDate
-	vDate, err := time.Parse("02/01/06T15:04:05", vStr)
+	vDate, err := time.Parse("02/01/2006T15:04:05", vStr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -159,9 +159,9 @@ func (c *chainCode) getLoanInfo(stub shim.ChaincodeStubInterface, args []string)
 	}
 	loanString := fmt.Sprintf("%+v", loan)
 
-	//sanctionString := strconv.FormatInt(loan.SanctionAmt, 10)
-	//loanStatus := loan.LoanStatus
-
+	sanctionString := strconv.FormatInt(loan.SanctionAmt, 10)
+	loanStatus := loan.LoanStatus
+	loanString = sanctionString + "," + loanStatus
 	// joining sacntion string and loan status
 
 	return shim.Success([]byte(loanString))

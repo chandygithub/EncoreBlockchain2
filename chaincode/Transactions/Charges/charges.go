@@ -1,16 +1,24 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 type chainCode struct {
+}
+
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -20,13 +28,13 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 	if function == "putTxnBalInfo" { //Inserting a New Business information
-		return putTxnBalInfo(stub, args)
+		return c.putTxnBalInfo(stub, args)
 	} else {
 		return shim.Error("incorrect function")
 	}
 }
 
-func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	/*
 	 * arg[0]	:	Key
 	 * arg[1]	:	txnID	(0)
@@ -43,9 +51,11 @@ func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	 * arg[11]	:	txnBal
 	 * arg[12]	:	by						//given args[6]
 	 */
-
+	if len(args) == 1 {
+		args = strings.Split(args[0], ",")
+	}
 	if len(args) != 8 {
-		return shim.Error("incorrcect number of arguments")
+		return shim.Error("incorrcect number of arguments in chargescc")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,119 +71,49 @@ func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	//Calling for updating Business_loan_wallet
 	//####################################################################################################################
 
-	// STEP-1
-	// using bankID, get a walletID from bank structure
-	// toID = bissID
-	bissID := args[4] // of Biss
-	//bank, err := stub.getState(bankID)
-	//bankFcn := "getWalletID"
-	chaincodeArgs := util.ToChaincodeArgs("getWalletID", bissID, "loan")
-	response := stub.InvokeChaincode("businesscc", chaincodeArgs, "myc")
-	if response.Status != shim.OK {
-		return shim.Error(response.Message)
-	}
-	walletID := string(response.Payload)
-
-	// STEP-2
-	// getting Balance from walletID
-	// walletFcn := "getWallet"
-	walletArgs := util.ToChaincodeArgs("getWallet", walletID)
-	walletResponse := stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
-	}
-	openBalString := string(walletResponse.Payload)
-	openBal, err := strconv.ParseInt(openBalString, 10, 64)
-	if err != nil {
-		return shim.Error("Error in converting the balance")
-	}
-
 	cAmtString := args[5]
-	cAmt, _ := strconv.ParseInt(cAmtString, 10, 64)
 	dAmtString := "0"
-	dAmt, _ := strconv.ParseInt(dAmtString, 10, 64)
-	txnBal := openBal - dAmt + cAmt
-	txnBalString := strconv.FormatInt(txnBal, 10)
 
-	// STEP-3
-	// update wallet of ID walletID here, and write it to the wallet_ledger
-	// walletFcn := "updateWallet"
-	walletArgs = util.ToChaincodeArgs("updateWallet", walletID, txnBalString)
-	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
+	walletID, openBalString, txnBalString, err := c.getWalletInfo(stub, args[4], "loan", "businesscc", cAmtString, dAmtString)
+	if err != nil {
+		return shim.Error("could'nt get wallet:" + args[4] + " info: " + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList := []string{"1", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[5], cAmtString, dAmtString, txnBalString, args[6]}
+	argsList := []string{"1txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr := strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
-	fmt.Println("calling the other chaincode")
-	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
+	chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsListStr)
+	fmt.Println("from charges calling the other chaincode: txnBalcc")
+	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return shim.Error(response.Message)
 	}
-	fmt.Println(response.GetPayload())
+	//fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//####################################################################################################################
-	//Calling for updating Bank Revenue_Wallet
+	//Calling for updating Bank Charges_Wallet
 	//####################################################################################################################
 
-	// STEP-1
-	// using bankID, get a walletID from bank structure
-	// bankID = bankID
-	bankID := args[3] // of Bank
-	//bank, err := stub.getState(bankID)
-	//bankFcn := "getWalletID"
-	chaincodeArgs = util.ToChaincodeArgs("getWalletID", bankID, "main")
-	response = stub.InvokeChaincode("bankcc", chaincodeArgs, "myc")
-	if response.Status != shim.OK {
-		return shim.Error(response.Message)
-	}
-	walletID = string(response.Payload[:])
-
-	// STEP-2
-	// getting Balance from walletID
-	// walletFcn := "getWallet"
-	walletArgs = util.ToChaincodeArgs("getWallet", walletID)
-	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
-	}
-	openBalString = string(walletResponse.Payload[:])
-	openBal, err = strconv.ParseInt(openBalString, 10, 64)
-	if err != nil {
-		return shim.Error("Error in converting the balance")
-	}
-
-	cAmtString = args[4]
-	cAmt, _ = strconv.ParseInt(cAmtString, 10, 64)
+	cAmtString = args[5]
 	dAmtString = "0"
-	dAmt, _ = strconv.ParseInt(dAmtString, 10, 64)
-	txnBal = openBal - dAmt + cAmt
-	txnBalString = strconv.FormatInt(txnBal, 10)
 
-	// STEP-3
-	// update wallet of ID walletID here, and write it to the wallet_ledger
-	// walletFcn := "updateWallet"
-	walletArgs = util.ToChaincodeArgs("updateWallet", walletID, txnBalString)
-	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
+	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[3], "charges", "bankcc", cAmtString, dAmtString)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"2", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[4], cAmtString, dAmtString, txnBalString, args[5]}
+	argsList = []string{"2txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
-	fmt.Println("calling the other chaincode")
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
+	fmt.Println("from charges calling the other chaincode: txnBalcc")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return shim.Error(response.Message)
 	}
-	fmt.Println(response.GetPayload())
+	//fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -181,63 +121,95 @@ func putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	//Calling for updating Bank Asset_Wallet
 	//####################################################################################################################
 
-	// STEP-1
-	// using bankID, get a walletID from bank structure
-	// bankID = bankID
-	bankID = args[3] // of Bank
-	//bank, err := stub.getState(bankID)
-	//bankFcn := "getWalletID"
-	chaincodeArgs = util.ToChaincodeArgs("getWalletID", bankID, "main")
-	response = stub.InvokeChaincode("bankcc", chaincodeArgs, "myc")
-	if response.Status != shim.OK {
-		return shim.Error(response.Message)
-	}
-	walletID = string(response.Payload[:])
-
-	// STEP-2
-	// getting Balance from walletID
-	// walletFcn := "getWallet"
-	walletArgs = util.ToChaincodeArgs("getWallet", walletID)
-	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
-	}
-	openBalString = string(walletResponse.Payload[:])
-	openBal, err = strconv.ParseInt(openBalString, 10, 64)
-	if err != nil {
-		return shim.Error("Error in converting the balance")
-	}
-
-	cAmtString = args[4]
-	cAmt, _ = strconv.ParseInt(cAmtString, 10, 64)
+	cAmtString = args[5]
 	dAmtString = "0"
-	dAmt, _ = strconv.ParseInt(dAmtString, 10, 64)
-	txnBal = openBal - dAmt + cAmt
-	txnBalString = strconv.FormatInt(txnBal, 10)
 
-	// STEP-3
-	// update wallet of ID walletID here, and write it to the wallet_ledger
-	// walletFcn := "updateWallet"
-	walletArgs = util.ToChaincodeArgs("updateWallet", walletID, txnBalString)
-	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
-	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
+	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[3], "asset", "bankcc", cAmtString, dAmtString)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"3", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[4], cAmtString, dAmtString, txnBalString, args[5]}
+	argsList = []string{"3txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = util.ToChaincodeArgs("putTxnInfo", argsListStr)
-	fmt.Println("calling the other chaincode")
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
+	fmt.Println("from charges calling the other chaincode: txnBalcc")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
 		return shim.Error(response.Message)
 	}
-	fmt.Println(response.GetPayload())
+	//fmt.Println(response.GetPayload())
 	//successfully updated Bank's main wallet and written the txn thing to the ledger
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	/*
+		//####################################################################################################################
+		//Calling for Loan Balance Update
+		//####################################################################################################################
 
+		cAmtString = "0"
+		dAmtString = args[5]
+		argStrings := []string{"1loanbal", args[3], args[0], args[2], args[1], cAmtString, dAmtString} // 6 variables for updateLoanBalance
+		argStr := strings.Join(argStrings, ",")
+		chaincodeArgs = toChaincodeArgs("updateLoanBal", argStr)
+		//sending to loanBalUp chaincode not loanBalance Chaincode
+		response = stub.InvokeChaincode("loanbalcc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error("Error in updating Loan Balance: " + response.Message)
+		}
+		//walletID := string(response.GetPayload())
+	*/
 	return shim.Success(nil)
+}
+
+func (c *chainCode) getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walletType string, ccName string, cAmtStr string, dAmtStr string) (string, string, string, error) {
+
+	// STEP-1
+	// using FromID, get a walletID from bank structure
+	// bankID = bankID
+
+	chaincodeArgs := toChaincodeArgs("getWalletID", participantID, walletType)
+	response := stub.InvokeChaincode(ccName, chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return "", "", "", errors.New(response.Message)
+	}
+	walletID := string(response.GetPayload())
+
+	// STEP-2
+	// getting Balance from walletID
+	// walletFcn := "getWallet"
+	walletArgs := toChaincodeArgs("getWallet", walletID)
+	walletResponse := stub.InvokeChaincode("walletcc", walletArgs, "myc")
+	if walletResponse.Status != shim.OK {
+		return "", "", "", errors.New(walletResponse.Message)
+	}
+	openBalString := string(walletResponse.Payload)
+
+	openBal, err := strconv.ParseInt(openBalString, 10, 64)
+	if err != nil {
+		return "", "", "", errors.New("Error in converting the openBalance")
+	}
+	cAmt, err := strconv.ParseInt(cAmtStr, 10, 64)
+	if err != nil {
+		return "", "", "", errors.New("Error in converting the cAmt")
+	}
+	dAmt, err := strconv.ParseInt(dAmtStr, 10, 64)
+	if err != nil {
+		return "", "", "", errors.New("Error in converting the dAmt")
+	}
+
+	txnBal := openBal - dAmt + cAmt
+	txnBalString := strconv.FormatInt(txnBal, 10)
+
+	// STEP-3
+	// update wallet of ID walletID here, and write it to the wallet_ledger
+	// walletFcn := "updateWallet"
+	walletArgs = toChaincodeArgs("updateWallet", walletID, txnBalString)
+	walletResponse = stub.InvokeChaincode("walletcc", walletArgs, "myc")
+	if walletResponse.Status != shim.OK {
+		return "", "", "", errors.New("Not shim ok: " + walletResponse.Message)
+	}
+
+	return walletID, openBalString, txnBalString, nil
 }
 
 func main() {
