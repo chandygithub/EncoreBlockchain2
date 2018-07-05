@@ -58,6 +58,7 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 		"disbursement": true,
 		"collection":   true,
 		"refund":       true,
+		"charges":      true,
 	}
 
 	//Converting into lower case for comparison
@@ -100,7 +101,7 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	case "charges":
 		argsStr := strings.Join([]string{args[2], args[3], args[4], args[6], args[7], args[5], args[8], args[1]}, ",")
 		fmt.Println("the Charges arguments: " + argsStr)
-		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
+		chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsStr)
 		fmt.Println("calling the charges chaincode")
 		response := stub.InvokeChaincode("chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {

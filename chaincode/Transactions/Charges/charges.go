@@ -74,13 +74,15 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	cAmtString := args[5]
 	dAmtString := "0"
 
+	fmt.Println("before going to getWalletInfo")
 	walletID, openBalString, txnBalString, err := c.getWalletInfo(stub, args[4], "loan", "businesscc", cAmtString, dAmtString)
 	if err != nil {
 		return shim.Error("could'nt get wallet:" + args[4] + " info: " + err.Error())
 	}
+	fmt.Println("after getWalletInfo")
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList := []string{"1txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
+	argsList := []string{"1txnbal", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[5], cAmtString, dAmtString, txnBalString, args[6]}
 	argsListStr := strings.Join(argsList, ",")
 	chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("from charges calling the other chaincode: txnBalcc")
@@ -105,7 +107,7 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"2txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
+	argsList = []string{"2txnbal", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[5], cAmtString, dAmtString, txnBalString, args[6]}
 	argsListStr = strings.Join(argsList, ",")
 	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("from charges calling the other chaincode: txnBalcc")
@@ -130,7 +132,7 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"3txnbal", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
+	argsList = []string{"3txnbal", "0", args[0], args[1], args[2], walletID, openBalString, args[7], args[5], cAmtString, dAmtString, txnBalString, args[6]}
 	argsListStr = strings.Join(argsList, ",")
 	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("from charges calling the other chaincode: txnBalcc")
