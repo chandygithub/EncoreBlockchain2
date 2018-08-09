@@ -154,21 +154,23 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 
 	//####################################################################################################################
 
-	//####################################################################################################################
-	//Calling for Loan Balance Update
-	//####################################################################################################################
+	/*
+		//####################################################################################################################
+		//Calling for Loan Balance Update
+		//####################################################################################################################
 
-	cAmtString = "0"
-	dAmtString = args[5]
-	argStrings := []string{"1loanbal", args[3], args[0], args[2], args[1], cAmtString, dAmtString} // 6 variables for updateLoanBalance
-	argStr := strings.Join(argStrings, ",")
-	chaincodeArgs = toChaincodeArgs("updateLoanBal", argStr)
-	//sending to loanBalUp chaincode not loanBalance Chaincode
-	response = stub.InvokeChaincode("loanbalcc", chaincodeArgs, "myc")
-	if response.Status != shim.OK {
-		return shim.Error("Error in updating Loan Balance: " + response.Message)
-	}
-	//walletID := string(response.GetPayload())
+		cAmtString = "0"
+		dAmtString = args[5]
+		argStrings := []string{"1loanbal", args[3], args[0], args[2], args[1], cAmtString, dAmtString} // 6 variables for updateLoanBalance
+		argStr := strings.Join(argStrings, ",")
+		chaincodeArgs = toChaincodeArgs("updateLoanBal", argStr)
+		//sending to loanBalUp chaincode not loanBalance Chaincode
+		response = stub.InvokeChaincode("loanbalcc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error("Error in updating Loan Balance: " + response.Message)
+		}
+		//walletID := string(response.GetPayload())
+	*/
 
 	//return on successful transaction updation
 	return shim.Success(nil)
