@@ -28,13 +28,13 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "newTxnInfo" {
-		return c.newTxnInfo(stub, args)
+	if function == "newDisbInfo" {
+		return c.newDisbInfo(stub, args)
 	}
 	return shim.Error("no function named" + function + "found in disbursement")
 }
 
-func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (c *chainCode) newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) == 1 {
 		args = strings.Split(args[0], ",")
 	}
@@ -89,7 +89,7 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 
 	walletID, openBalString, txnBalString, err = c.getWalletInfo(stub, args[7], "main", "businesscc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("Business Main Wallet(Disbursement):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger

@@ -131,7 +131,7 @@ func (c *chainCode) getTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	transaction := transactionInfo{}
 	err = json.Unmarshal(txnBytes, transaction)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("error while unmarshaling txnInfo:" + err.Error())
 	}
 
 	tString := fmt.Sprintf("%+v", transaction)

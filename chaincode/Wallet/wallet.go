@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -14,7 +13,7 @@ type chainCode struct {
 }
 
 type walletsInfo struct {
-	Balance int64
+	Balance float64
 }
 
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -24,19 +23,27 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 	if function == "newWallet" {
-		return c.newWallet(stub, args)
+		return newWallet(stub, args)
 	} else if function == "getWallet" {
-		return c.getWallet(stub, args)
+		return getWallet(stub, args)
 	} else if function == "updateWallet" {
-		return c.updateWallet(stub, args)
+		return updateWallet(stub, args)
 	}
-	return shim.Success(nil)
+	return shim.Error("No function named " + function + " in Wallet")
 
 }
 
-func (c *chainCode) newWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//Creating new Wallet
+
+func newWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 2 {
-		return shim.Error("Invalid number of arguments, need ID and amt")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in newWallet (required:2) given:" + xLenStr)
+	}
+
+	bal64, err := strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	ifExists, err := stub.GetState(args[0])
@@ -44,20 +51,16 @@ func (c *chainCode) newWallet(stub shim.ChaincodeStubInterface, args []string) p
 		return shim.Error("WalletId " + args[0] + " exits. Cannot create new ID")
 	}
 
-	bal64, err := strconv.ParseInt(args[1], 10, 64)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
 	bal := walletsInfo{bal64}
 	balBytes, _ := json.Marshal(bal)
 	err = stub.PutState(args[0], balBytes)
-	return shim.Success([]byte("Successfully added to the wallet"))
+	return shim.Success(nil)
 }
 
-func (c *chainCode) getWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Need only wallet ID to get wallet info")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in getWallet (required:1) given: " + xLenStr)
 	}
 	balBytes, err := stub.GetState(args[0])
 	if err != nil {
@@ -70,20 +73,22 @@ func (c *chainCode) getWallet(stub shim.ChaincodeStubInterface, args []string) p
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	//balString := fmt.Sprintf("%+v", bal)
-	//fmt.Printf("Wallet %s : %s\n", args[0], balString)
+	balString := fmt.Sprintf("%+v", bal)
+	fmt.Printf("Wallet %s : %s\n", args[0], balString)
 
-	balStr := strconv.FormatInt(bal.Balance, 10)
-
+	balStr := strconv.FormatFloat(bal.Balance, 'f', 4, 64)
 	return shim.Success([]byte(balStr))
 }
 
-func (c *chainCode) updateWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) == 1 {
-		args = strings.Split(args[0], ",")
-	}
+func updateWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	/*
+	*args[0] -> WalletID
+	*args[1] -> Wallet Ballance
+	 */
 	if len(args) != 2 {
-		return shim.Error("Invalid number of arguments")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in Wallet Updation (required:2) given: " + xLenStr)
 	}
 	balBytes, err := stub.GetState(args[0])
 	if err != nil {
@@ -96,7 +101,8 @@ func (c *chainCode) updateWallet(stub shim.ChaincodeStubInterface, args []string
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	bal.Balance, err = strconv.ParseInt(args[1], 10, 64)
+
+	bal.Balance, err = strconv.ParseFloat(args[1], 64)
 	if err != nil {
 		return shim.Error("Error in Wallet updation parse int" + err.Error())
 	}
@@ -106,13 +112,13 @@ func (c *chainCode) updateWallet(stub shim.ChaincodeStubInterface, args []string
 	if err != nil {
 		return shim.Error("Error in Wallet updation " + err.Error())
 	}
-	fmt.Printf("Balance for %s : %d\n", args[0], bal.Balance)
+	fmt.Printf("Balance for %s : %f\n", args[0], bal.Balance)
 	return shim.Success(nil)
 }
 
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("Unable to start the chaincode")
+		fmt.Printf("Error starting Wallet chaincode: %s\n", err)
 	}
 }
