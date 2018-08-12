@@ -20,10 +20,10 @@ type transactionInfo struct {
 	LoanID  string    `json:"LoanID"`       //args[3]
 	InsID   string    `json:"InstrumentID"` //args[4]
 	Amt     int64     `json:"TxnAmount"`    //args[5]
-	FromID  string    `json:"From"`         //args[6]
-	ToID    string    `json:"To"`           //args[7]
-	By      string    `json:"By"`           //args[8]
-	PprID   string    `json:"PPR_ID"`       //args[9]
+	FromID  string    `json:"From"`         //???
+	ToID    string    `json:"To"`           //???
+	By      string    `json:"By"`           //args[7]
+	PprID   string    `json:"PPR_ID"`       //args[8]
 }
 
 func toChaincodeArgs(args ...string) [][]byte {
@@ -42,23 +42,34 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "newTxnInfo" {
-		return c.newTxnInfo(stub, args)
+		//Creates new Transaction Information
+		return newTxnInfo(stub, args)
 	} else if function == "getTxnInfo" {
-		return c.getTxnInfo(stub, args)
+		//Retrieves an existing transcation information
+		return getTxnInfo(stub, args)
 	}
-	return shim.Success(nil)
+	return shim.Error("No function named " + function + " in Transactionsssss")
 }
 
-func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 10 {
-		return shim.Error("Invalid number of arguments for transaction")
+func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 9 {
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in newTxnInfo(transactions) (required:10) given: " + xLenStr)
 	}
 
 	tTypeValues := map[string]bool{
-		"disbursement": true,
-		"collection":   true,
-		"refund":       true,
-		"charges":      true,
+		"disbursement":              true,
+		"repayment":                 true,
+		"margin refund":             true,
+		"interest refund":           true,
+		"penal interest collection": true,
+		"loan sanction":             true,
+		"charges":                   true,
+		"interest in advance":       true,
+		"accrual":                   true,
+		"interest accrued charges":  true,
+		"penal charges":             true,
+		"TDS":                       true,
 	}
 
 	//Converting into lower case for comparison
@@ -70,43 +81,228 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	//TxnDate -> tDate
 	tDate, err := time.Parse("02/01/2006", args[2])
 	if err != nil {
-		return shim.Error("Date error, txncc: newTxnInfo, " + err.Error())
+		return shim.Error(err.Error())
 	}
 
 	amt, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return shim.Error("Error in converting amt to string in transactions:newTxnInfo(), " + err.Error())
+		return shim.Error(err.Error())
 	}
+
+	//TODO: put it at last for redability
+
+	var sellerID string
+	var buyerID string
 
 	switch tTypeLower {
 
 	case "disbursement":
-		argsStr := strings.Join(args, ",")
-		chaincodeArgs := toChaincodeArgs("newTxnInfo", argsStr)
+		//bank -> seller
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newDisbInfo", argsStr)
 		fmt.Println("calling the disbursement chaincode")
 		response := stub.InvokeChaincode("disbursementcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error(response.Message)
 		}
-		//TODO: put it at last for redability
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8], args[9]}
+
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		fmt.Println(transaction)
+
 		txnBytes, err := json.Marshal(transaction)
 		err = stub.PutState(args[0], txnBytes)
 		if err != nil {
 			return shim.Error("Cannot write into ledger the transactino details")
-		} else {
-			fmt.Println("Successfully inserted the transaction " + args[0] + " into the ledger")
 		}
+		fmt.Println("Successfully inserted disbursement transaction into the ledger")
 
-	case "charges":
-		argsStr := strings.Join([]string{args[2], args[3], args[4], args[6], args[7], args[5], args[8], args[1]}, ",")
-		fmt.Println("the Charges arguments: " + argsStr)
-		chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsStr)
-		fmt.Println("calling the charges chaincode")
-		response := stub.InvokeChaincode("chargescc", chaincodeArgs, "myc")
+	//#######################################################################################################
+
+	case "repayment":
+		//seller -> bank
+		sellerID = getSellerID(stub, args[3])
+		buyerID = getBuyerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newRepayInfo", argsStr)
+		fmt.Println("calling the repayment chaincode")
+		response := stub.InvokeChaincode("repaycc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error(response.Message)
 		}
+
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, sellerID, args[6], args[7], args[8]}
+		fmt.Println(transaction)
+		txnBytes, err := json.Marshal(transaction)
+		err = stub.PutState(args[0], txnBytes)
+		if err != nil {
+			return shim.Error("Cannot write into ledger the transaction details")
+		}
+		fmt.Println("Successfully inserted repayment transaction into the ledger")
+
+	//#######################################################################################################
+
+	case "margin refund":
+		//bank -> seller
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newMarginInfo", argsStr)
+		fmt.Println("calling the marginrefundcc chaincode")
+		response := stub.InvokeChaincode("marginrefundcc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		fmt.Println(transaction)
+		txnBytes, err := json.Marshal(transaction)
+		err = stub.PutState(args[0], txnBytes)
+		if err != nil {
+			return shim.Error("Cannot write into ledger the transaction details")
+		}
+		fmt.Println("Successfully inserted margin refund transaction into the ledger")
+
+	//#######################################################################################################
+
+	case "interest refund":
+		//bank -> seller
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newInterestInfo", argsStr)
+		fmt.Println("calling the interestrefundcc chaincode")
+		response := stub.InvokeChaincode("interestrefundcc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		fmt.Println(transaction)
+		txnBytes, err := json.Marshal(transaction)
+		err = stub.PutState(args[0], txnBytes)
+		if err != nil {
+			return shim.Error("Cannot write into ledger the transaction details")
+		}
+		fmt.Println("Successfully inserted interest refund transaction into the ledger")
+
+	//#######################################################################################################
+
+	case "penal interest collection":
+		//seller -> bank
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newPICinfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, sellerID, args[6], args[7], args[8]}
+		fmt.Println(transaction)
+		txnBytes, err := json.Marshal(transaction)
+		err = stub.PutState(args[0], txnBytes)
+		if err != nil {
+			return shim.Error("Cannot write into ledger the transaction details")
+		}
+		fmt.Println("Successfully inserted penal interest collection transaction into the ledger")
+
+	//#######################################################################################################
+
+	case "loan sanction":
+		argsStr := strings.Join(args, ",")
+		/*{}*/
+		chaincodeArgs := toChaincodeArgs("newLoanSancInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+
+	case "charges":
+
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newChargesInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+	case "interest in advance":
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newInterestInAdvInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+
+	case "accrual":
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newAccrualInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+
+	case "interest accrued charges":
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newInterstAccruedInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+
+	case "penal charges":
+		sellerID = getSellerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newPenalChargesInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
+
+	case "TDS":
+		sellerID = getSellerID(stub, args[3])
+		buyerID = getBuyerID(stub, args[3])
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[7], args[8]}
+		argsStr := strings.Join(txnArgs, ",")
+		chaincodeArgs := toChaincodeArgs("newTDSInfo", argsStr)
+		fmt.Println("calling the piccc chaincode")
+		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		if response.Status != shim.OK {
+			return shim.Error(response.Message)
+		}
+
+	//#######################################################################################################
 
 	default:
 		fmt.Println("incorrect txnType")
@@ -116,33 +312,55 @@ func (c *chainCode) newTxnInfo(stub shim.ChaincodeStubInterface, args []string) 
 	return shim.Success(nil)
 }
 
-func (c *chainCode) getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func getTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		return shim.Error("Need only one argument for getting txn info")
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("Invalid number of arguments in getTxnInfo (required:1) given: " + xLenStr)
 	}
 
 	txnBytes, err := stub.GetState(args[0])
 	if err != nil {
 		return shim.Error(err.Error())
 	} else if txnBytes == nil {
-		return shim.Error("No data exists on this loanID: " + args[0])
+		return shim.Error("No data exists on this txnID: " + args[0])
 	}
 
 	transaction := transactionInfo{}
-	err = json.Unmarshal(txnBytes, transaction)
+	err = json.Unmarshal(txnBytes, &transaction)
 	if err != nil {
-		return shim.Error("error while unmarshaling txnInfo:" + err.Error())
+		return shim.Error("error while unmarshaling:" + err.Error())
 	}
 
 	tString := fmt.Sprintf("%+v", transaction)
-	// marshal and return????
 	return shim.Success([]byte(tString))
 
+}
+
+func getSellerID(stub shim.ChaincodeStubInterface, loanID string) string {
+
+	chaincodeArgs := toChaincodeArgs("getSellerID", loanID)
+	fmt.Println("calling the loan chaincode")
+	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return "not_found"
+	}
+	return string(response.GetPayload())
+}
+
+func getBuyerID(stub shim.ChaincodeStubInterface, loanID string) string {
+
+	chaincodeArgs := toChaincodeArgs("getBuyerID", loanID)
+	fmt.Println("calling the loan chaincode")
+	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return "not_found"
+	}
+	return string(response.GetPayload())
 }
 
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("Unable to start the chaincode")
+		fmt.Printf("Error starting Transaction chaincode: %s\n", err)
 	}
 }

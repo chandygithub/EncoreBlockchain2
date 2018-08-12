@@ -28,20 +28,20 @@ func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "newChargesInfo" {
-		//Creates new charges info
-		return newChargesInfo(stub, args)
+	if function == "newPenalChargesInfo" {
+		//Creates new penalCharges info
+		return newPenalChargesInfo(stub, args)
 	}
-	return shim.Error("charges.cc: " + "no function named " + function + " found in charges")
+	return shim.Error("penalCharges.cc: " + "no function named " + function + " found in penalCharges")
 }
 
-func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func newPenalChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) == 1 {
 		args = strings.Split(args[0], ",")
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("charges.cc: " + "Invalid number of arguments in newChargesInfo(charges) (required:10) given:" + xLenStr)
+		return shim.Error("penalCharges.cc: " + "Invalid number of arguments in newPenalChargesInfo(penalCharges) (required:10) given:" + xLenStr)
 	}
 	/*
 	 *TxnType string    //args[1]
@@ -49,8 +49,8 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	 *LoanID  string    //args[3]
 	 *InsID   string    //args[4]
 	 *Amt     int64     //args[5]
-	 *BankID  string    //args[6]
-	 *SellID  string    //args[7]
+	 *bank    string    //args[6]
+	 *seller  string    //args[7]
 	 *By      string    //args[8]
 	 *PprID   string    //args[9]
 	 */
@@ -60,18 +60,11 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error("charges.cc: can't get loanStatus" + response.Message)
+		return shim.Error("penalCharges.cc: can't get loanStatus" + response.Message)
 	}
 	statusNamt := strings.Split(string(response.Payload), ",")
-	if statusNamt[0] != "sanctioned" && statusNamt[0] != "part disbursed" && statusNamt[0] != "disbursed" {
-		return shim.Error("charges.cc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed / disbursed")
-	}
-
-	//sancAmt, _ := strconv.ParseInt(statusNamt[0], 10, 64)
-	//txnAmt > 0
-	txnAmt, _ := strconv.ParseInt(args[5], 10, 64)
-	if txnAmt <= 0 {
-		return shim.Error("charges.cc: txnAmt is zero or less")
+	if statusNamt[0] != "overdue" {
+		return shim.Error("penalCharges.cc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed / disbursed")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +87,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err := getWalletInfo(stub, args[6], "charges", "bankcc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Bank Revenue Wallet(charges):" + err.Error())
+		return shim.Error("penalCharges.cc: " + "Bank Revenue Wallet(penalCharges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -117,7 +110,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[7], "chargesOut", "businesscc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Business Charges O/s Wallet(charges):" + err.Error())
+		return shim.Error("penalCharges.cc: " + "Business Charges O/s Wallet(penalCharges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -140,7 +133,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[3], "charges", "loancc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Loan charges Wallet(charges):" + err.Error())
+		return shim.Error("penalCharges.cc: " + "Loan charges Wallet(penalCharges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
