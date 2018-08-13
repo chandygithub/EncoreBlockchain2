@@ -13,6 +13,14 @@ import (
 type chainCode struct {
 }
 
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
+}
+
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
@@ -23,7 +31,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "newRepayInfo" {
 		return newRepayInfo(stub, args)
 	}
-	return shim.Error("no function named " + function + " found in Repayment")
+	return shim.Error("repaymentcc: " + "no function named " + function + " found in Repayment")
 }
 
 func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -33,7 +41,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in newRepayInfo(repayment) (required:10) given:" + xLenStr)
+		return shim.Error("repaymentcc: " + "Invalid number of arguments in newRepayInfo(repayment) (required:10) given:" + xLenStr)
 	}
 
 	/*
@@ -98,19 +106,19 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err := getWalletID(stub, "businesscc", args[8], "main")
 	if err != nil {
-		return shim.Error("Repayment Business Main WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Main WalletID " + err.Error())
 	}
 
 	openBalance, err := getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Buyer Main WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Buyer Main WalletValue " + err.Error())
 	}
 	openBalString := strconv.FormatInt(openBalance, 10)
 	bal := openBalance - amt
 
 	response := walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("repaymentcc: " + response.Message)
 	}
 	txnBalString := strconv.FormatInt(bal, 10)
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -119,7 +127,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr := strings.Join(argsList, ",")
 	txnResponse := putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -131,12 +139,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "main")
 	if err != nil {
-		return shim.Error("Repayment Bank Main WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Main WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Bank Main WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Main WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -147,13 +155,13 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("repaymentcc: " + response.Message)
 	}
 	argsList = []string{"2rep", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -165,32 +173,32 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//Loan Disbursed Wallet balance
 	loanDisbursedWalletID, err := getWalletID(stub, "loancc", args[6], "disbursed")
 	if err != nil {
-		return shim.Error("Repayment loanDisbursedWalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment loanDisbursedWalletID " + err.Error())
 	}
 	loanDisbursedWalletValue, err := getWalletValue(stub, loanDisbursedWalletID)
 	if err != nil {
-		return shim.Error("Repayment loanDisbursedWalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment loanDisbursedWalletValue " + err.Error())
 	}
 
 	//Loan Charges Wallet Balance
 	loanChargesWalletID, err := getWalletID(stub, "loancc", args[3], "charges")
 	if err != nil {
-		return shim.Error("Repayment loanChargesWalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment loanChargesWalletID " + err.Error())
 	}
 	loanChargesWalletValue, err := getWalletValue(stub, loanChargesWalletID)
 	if err != nil {
-		return shim.Error("Repayment loanChargesWalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment loanChargesWalletValue " + err.Error())
 	}
 
 	//Bank Asset Wallet
 	walletID, err = getWalletID(stub, "bankcc", args[7], "asset")
 	if err != nil {
-		return shim.Error("Repayment Bank Asset WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Asset WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Bank Asset WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Asset WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -199,7 +207,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Bank Asset Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Bank Asset Wallet " + response.Message)
 	}
 	dAmt := loanChargesWalletValue + loanDisbursedWalletValue
 	dAmtString = strconv.FormatInt(dAmt, 10)
@@ -207,7 +215,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -217,12 +225,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	dAmtString = "0"
 	walletID, err = getWalletID(stub, "bankcc", args[7], "liability")
 	if err != nil {
-		return shim.Error("Repayment Bank Liability WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Bank Liability WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -234,7 +242,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Bank Liability Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Bank Liability Wallet " + response.Message)
 	}
 	txnBalString = strconv.FormatInt(bal, 10)
 	cAmtString = strconv.FormatInt(cAmt, 10)
@@ -243,7 +251,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -256,18 +264,18 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	chaincodeArgs := toChaincodeArgs("getSellerID", args[3])
 	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("repaymentcc: " + response.Message)
 	}
 
 	sellerID := string(response.Payload)
 	walletID, err = getWalletID(stub, "businesscc", sellerID, "loan")
 	if err != nil {
-		return shim.Error("Repayment Business Loan_WalletID (seller) " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Loan_WalletID (seller) " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Business Loan_WalletValue (seller) " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Loan_WalletValue (seller) " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -282,7 +290,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Business Loan_Wallet (seller) " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Business Loan_Wallet (seller) " + response.Message)
 	}
 	dAmtString = strconv.FormatInt(dAmt, 10)
 
@@ -290,7 +298,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -300,12 +308,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 	walletID, err = getWalletID(stub, "businesscc", args[6], "interestOut")
 	if err != nil {
-		return shim.Error("Repayment Business Charges/Interest O/s WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Charges/Interest O/s WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Business Charges/Interest O/s WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Charges/Interest O/s WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 	dAmt = loanChargesWalletValue
@@ -314,7 +322,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Business Charges/Interest O/s Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Business Charges/Interest O/s Wallet " + response.Message)
 	}
 	dAmtString = strconv.FormatInt(dAmt, 10)
 
@@ -322,7 +330,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -332,12 +340,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 	walletID, err = getWalletID(stub, "businesscc", args[6], "principalOut")
 	if err != nil {
-		return shim.Error("Repayment Business Principal O/s WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Principal O/s WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Business Principal O/s WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Business Principal O/s WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -346,7 +354,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Business Principal O/s Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Business Principal O/s Wallet " + response.Message)
 	}
 	dAmt = loanDisbursedWalletValue
 	dAmtString = strconv.FormatInt(dAmt, 10)
@@ -355,7 +363,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -365,12 +373,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 	walletID, err = getWalletID(stub, "loan", args[3], "charges")
 	if err != nil {
-		return shim.Error("Repayment Loan Charges WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Loan Charges WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Loan Charges WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Loan Charges WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -379,7 +387,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Loan Charges Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Loan Charges Wallet " + response.Message)
 	}
 	dAmt = loanChargesWalletValue
 	dAmtString = strconv.FormatInt(dAmt, 10)
@@ -388,7 +396,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -398,12 +406,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 	walletID, err = getWalletID(stub, "loan", args[3], "disbursed")
 	if err != nil {
-		return shim.Error("Repayment Loan Disbursed WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Loan Disbursed WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Loan Disbursed WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Loan Disbursed WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -413,7 +421,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		chaincodeArgs := toChaincodeArgs("updateLoanInfo", args[3], "repayment", "collected")
 		response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
-			return shim.Error(response.Message)
+			return shim.Error("repaymentcc: " + response.Message)
 		}
 	} else if amt < loanChargesWalletValue+loanDisbursedWalletValue {
 		dAmt = amt - loanChargesWalletValue
@@ -421,13 +429,13 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		chaincodeArgs := toChaincodeArgs("updateLoanInfo", args[3], "repayment", "part collected")
 		response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
-			return shim.Error(response.Message)
+			return shim.Error("repaymentcc: " + response.Message)
 		}
 	}
 	txnBalString = strconv.FormatInt(bal, 10)
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error("Repayment Loan Charges Wallet " + response.Message)
+		return shim.Error("repaymentcc: " + "Repayment Loan Charges Wallet " + response.Message)
 	}
 	dAmtString = strconv.FormatInt(dAmt, 10)
 
@@ -435,7 +443,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -447,12 +455,12 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err = getWalletID(stub, "business", args[6], "liability")
 	if err != nil {
-		return shim.Error("Repayment Bank Liability WalletID " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Repayment Bank Liability WalletValue " + err.Error())
+		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -461,14 +469,14 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("repaymentcc: " + response.Message)
 	}
 
 	argsList = []string{"10rep", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -482,7 +490,7 @@ func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Respon
 	fmt.Println("calling the txnbalcc chaincode from repayment")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("repaymentcc: " + response.Message)
 	}
 	fmt.Println(string(response.Payload))
 	return shim.Success(nil)
@@ -526,13 +534,7 @@ func walletUpdation(stub shim.ChaincodeStubInterface, walletID string, amt int64
 	return shim.Success(nil)
 
 }
-func toChaincodeArgs(args ...string) [][]byte {
-	bargs := make([][]byte, len(args))
-	for i, arg := range args {
-		bargs[i] = []byte(arg)
-	}
-	return bargs
-}
+
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {

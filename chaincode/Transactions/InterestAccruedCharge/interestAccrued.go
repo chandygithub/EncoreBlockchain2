@@ -160,8 +160,8 @@ func newInterestAccruedInfo(stub shim.ChaincodeStubInterface, args []string) pb.
 	//Calling for updating Bank Revenue Wallet
 	//####################################################################################################################
 
-	cAmtString = "0"
-	dAmtString = args[5]
+	cAmtString = args[5]
+	dAmtString = "0"
 
 	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[6], "charges", "bankcc", cAmtString, dAmtString)
 	if err != nil {

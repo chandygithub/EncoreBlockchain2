@@ -15,20 +15,20 @@ type chainCode struct {
 }
 
 type programInfo struct {
-	ProgramName        string    //[1]
-	ProgramAnchor      string    //BusinessID //[2]
-	ProgramType        string    //[3]
-	ProgramStartDate   time.Time //auto generated as created
-	ProgramEndDate     time.Time //[4]
-	ProgramLimit       int64     //[5]
-	ProgramROI         int64     //[6]
-	ProgramExposure    string    //[7]
-	DiscountPercentage int64     //[8]
-	DiscountPeriod     int64     //[9]
-	SanctionAuthority  string    //[10]
-	SanctionDate       time.Time //auto generated as created
-	RepaymentAcNum     string    //[11]
-	RepaymentWalletID  string    //taken from program anchors business id
+	ProgramName        string    `json:"ProgramName"`        //[1]
+	ProgramAnchor      string    `json:"ProgramAnchor"`      //BusinessID //[2]
+	ProgramType        string    `json:"ProgramType"`        //[3]
+	ProgramStartDate   time.Time `json:"ProgramStartDate"`   //auto generated as created
+	ProgramEndDate     time.Time `json:"ProgramEndDate"`     //[4]
+	ProgramLimit       int64     `json:"ProgramLimit"`       //[5]
+	ProgramROI         int64     `json:"ProgramROI"`         //[6]
+	ProgramExposure    string    `json:"ProgramExposure"`    //[7]
+	DiscountPercentage int64     `json:"DiscountPercentage"` //[8]
+	DiscountPeriod     int64     `json:"DiscountPeriod"`     //[9]
+	SanctionAuthority  string    `json:"SanctionAuthority"`  //[10]
+	SanctionDate       time.Time `json:"SanctionDate"`       //auto generated as created
+	RepaymentAcNum     string    `json:"RepaymentAcNo"`      //[11]
+	RepaymentWalletID  string    `json:"RepaymentWallet"`    //taken from program anchors business id
 }
 
 func toChaincodeArgs(args ...string) [][]byte {
@@ -62,26 +62,26 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		*/
 		return updateProgramInfo(stub, args)
 	}
-	return shim.Error("No function named " + function + " in Programsssssss")
+	return shim.Error("programcc: " + "No function named " + function + " in Programsssssss")
 }
 
 func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 11 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in writeProgram (required:11) given:" + xLenStr)
+		return shim.Error("programcc: " + "Invalid number of arguments in writeProgram (required:11) given:" + xLenStr)
 	}
 
 	//Checking existence of programID
 	response := programIDexists(stub, args[0])
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("programcc: " + response.Message)
 	}
 
 	//Checking existence of businessID
 	chaincodeArgs := toChaincodeArgs("bisIDexists", args[2])
 	response = stub.InvokeChaincode("businesscc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error("BusinessId " + args[2] + " does not exits")
+		return shim.Error("programcc: " + "BusinessId " + args[2] + " does not exits")
 	}
 
 	pTypes := map[string]bool{
@@ -96,7 +96,7 @@ func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//Checking whether the given argument is a valid type
 	pTypeLower := strings.ToLower(args[3])
 	if !pTypes[pTypeLower] {
-		return shim.Error("Invalid program type" + pTypeLower)
+		return shim.Error("programcc: " + "Invalid program type" + pTypeLower)
 	}
 
 	//ProgramStartDate -> pSDate	//new way or old way?
@@ -105,17 +105,17 @@ func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//ProgramEndDate -> pEDate
 	pEDate, err := time.Parse("02/01/2006", args[4])
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("programcc: " + err.Error())
 	}
 
 	pLimit, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return shim.Error("Invalid Program limit " + args[6])
+		return shim.Error("programcc: " + "Invalid Program limit " + args[6])
 	}
 
 	pROI, err := strconv.ParseInt(args[6], 10, 64)
 	if err != nil {
-		return shim.Error("Invalid Rate of Interest in writeProgram")
+		return shim.Error("programcc: " + "Invalid Rate of Interest in writeProgram")
 	}
 
 	pExposure := map[string]bool{
@@ -126,17 +126,17 @@ func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	pExposureLower := strings.ToLower(args[7])
 
 	if !pExposure[pExposureLower] {
-		return shim.Error("Invalid Program Exposure " + pExposureLower)
+		return shim.Error("programcc: " + "Invalid Program Exposure " + pExposureLower)
 	}
 
 	dPercentage, err := strconv.ParseInt(args[8], 10, 64)
 	if err != nil {
-		return shim.Error("Invalid discount percentage")
+		return shim.Error("programcc: " + "Invalid discount percentage")
 	}
 
 	dPeriod, err := strconv.ParseInt(args[9], 10, 64)
 	if err != nil {
-		return shim.Error("Invalid discount period")
+		return shim.Error("programcc: " + "Invalid discount period")
 	}
 
 	//SanctionDate -> sDate
@@ -146,7 +146,7 @@ func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	chaincodeArgs = toChaincodeArgs("getWalletID", args[2], "main")
 	response = stub.InvokeChaincode("businesscc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("programcc: " + response.Message)
 	}
 	repayWalletID := string(response.GetPayload())
 	pInfo := programInfo{args[1], args[2], pTypeLower, pSDate, pEDate, pLimit, pROI, pExposureLower, dPercentage, dPeriod, args[10], sDate, args[11], repayWalletID}
@@ -159,7 +159,7 @@ func programIDexists(stub shim.ChaincodeStubInterface, prgrmID string) pb.Respon
 	ifExists, _ := stub.GetState(prgrmID)
 	if ifExists != nil {
 		fmt.Println(ifExists)
-		return shim.Error("ProgramId " + prgrmID + " exits. Cannot create new ID")
+		return shim.Error("programcc: " + "ProgramId " + prgrmID + " exits. Cannot create new ID")
 	}
 	return shim.Success(nil)
 }
@@ -176,14 +176,14 @@ func updateProgramInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respo
 	pInfoBytes, err := stub.GetState(args[0])
 
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("programcc: " + err.Error())
 	} else if pInfoBytes == nil {
-		return shim.Error("No information on this programID(updateProgramInfo): " + args[0])
+		return shim.Error("programcc: " + "No information on this programID(updateProgramInfo): " + args[0])
 	}
 
 	err = json.Unmarshal(pInfoBytes, &pInfo)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("programcc: " + err.Error())
 	}
 
 	lowerStr := strings.ToLower(args[1])
@@ -191,14 +191,14 @@ func updateProgramInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respo
 	if lowerStr == "program end date" {
 		pEDate, err := time.Parse("02/01/2006", args[2])
 		if err != nil {
-			return shim.Error("updateProgramInfo updating programEndDate" + err.Error())
+			return shim.Error("programcc: " + "updateProgramInfo updating programEndDate" + err.Error())
 		}
 		pInfo.ProgramEndDate = pEDate
 	}
 
 	value, err := strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
-		return shim.Error("value (updateProgramInfo):" + err.Error())
+		return shim.Error("programcc: " + "value (updateProgramInfo):" + err.Error())
 	}
 
 	if lowerStr == "program limit" {
@@ -218,21 +218,21 @@ func getProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in getProgram (required:1) given:" + xLenStr)
+		return shim.Error("programcc: " + "Invalid number of arguments in getProgram (required:1) given:" + xLenStr)
 	}
 
 	pInfo := programInfo{}
 	pInfoBytes, err := stub.GetState(args[0])
 
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("programcc: " + err.Error())
 	} else if pInfoBytes == nil {
-		return shim.Error("No information on this programID: " + args[0])
+		return shim.Error("programcc: " + "No information on this programID: " + args[0])
 	}
 
 	err = json.Unmarshal(pInfoBytes, &pInfo)
 	if err != nil {
-		return shim.Error(err.Error())
+		return shim.Error("programcc: " + err.Error())
 	}
 
 	printProgramInfo := fmt.Sprintf("%+v", pInfo)
@@ -244,6 +244,6 @@ func getProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Printf("Error starting Program chaincode: %s\n", err)
+		fmt.Printf("programcc: "+"Error starting Program chaincode: %s\n", err)
 	}
 }

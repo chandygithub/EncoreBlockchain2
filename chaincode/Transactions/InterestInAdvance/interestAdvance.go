@@ -105,7 +105,7 @@ func newInterestAdvInfo(stub shim.ChaincodeStubInterface, args []string) pb.Resp
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestAdv.cc: " + response.Message)
 	}
 	fmt.Println("interestAdv.cc: " + string(response.GetPayload()))
 
@@ -259,6 +259,6 @@ func getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walle
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("Unable to start the chaincode")
+		fmt.Println("interestAdv.cc: " + "Unable to start the chaincode")
 	}
 }

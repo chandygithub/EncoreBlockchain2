@@ -13,6 +13,14 @@ import (
 type chainCode struct {
 }
 
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
+}
+
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
@@ -23,7 +31,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "newPICinfo" {
 		return newPICinfo(stub, args)
 	}
-	return shim.Error("no function named " + function + " found in Interest Refund")
+	return shim.Error("penalinterestcc: " + "no function named " + function + " found in Interest Refund")
 }
 
 func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -33,7 +41,7 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in newPICinfo(Interest Refund) (required:10) given:" + xLenStr)
+		return shim.Error("penalCharges.cc: " + "Invalid number of arguments in newPICinfo(Interest Refund) (required:10) given:" + xLenStr)
 	}
 
 	/*
@@ -69,16 +77,16 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	status := strings.Split(string(response.Payload), ",")[0]
 	if status != "overdue" {
-		return shim.Error("loan status for loanID " + args[3] + " is not overdue")
+		return shim.Error("penalCharges.cc: " + "loan status for loanID " + args[3] + " is not overdue")
 	}
 
 	//TXN Amt must be > Zero
 	if (amt < 0) || (amt == 0) {
-		return shim.Error("Transaction Amount in Penal Interest Collectionis less than or equal to zero")
+		return shim.Error("penalCharges.cc: " + "Transaction Amount in Penal Interest Collectionis less than or equal to zero")
 	}
 
 	//####################################################################################################################
@@ -92,19 +100,19 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err := getWalletID(stub, "businesscc", args[7], "main")
 	if err != nil {
-		return shim.Error("Penal Interest CollectionBusiness Main WalletID " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest CollectionBusiness Main WalletID " + err.Error())
 	}
 
 	openBalance, err := getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Penal Interest CollectionBusiness Main WalletValue " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest CollectionBusiness Main WalletValue " + err.Error())
 	}
 	openBalString := strconv.FormatInt(openBalance, 10)
 	bal := openBalance - amt
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	txnBalString := strconv.FormatInt(bal, 10)
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -113,7 +121,7 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	argsListStr := strings.Join(argsList, ",")
 	txnResponse := putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("penalCharges.cc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -125,12 +133,12 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "main")
 	if err != nil {
-		return shim.Error("Penal Interest CollectionBank Main WalletID " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest CollectionBank Main WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Penal Interest Collection Bank Main WalletValue " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest Collection Bank Main WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -141,13 +149,13 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	argsList = []string{"2PIC", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("penalCharges.cc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -159,12 +167,12 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err = getWalletID(stub, "businesscc", args[7], "chargesOut")
 	if err != nil {
-		return shim.Error("Penal Interest Collection Business Charges O/s WalletID " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest Collection Business Charges O/s WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Penal Interest Collection Business Charges O/s WalletValue " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest Collection Business Charges O/s WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -175,13 +183,13 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	argsList = []string{"3PIC", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("penalCharges.cc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -193,12 +201,12 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	walletID, err = getWalletID(stub, "loancc", args[3], "charges")
 	if err != nil {
-		return shim.Error("Penal Interest Collection Loan Charges Wallet WalletID " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest Collection Loan Charges Wallet WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Penal Interest Collection Loan Charges WalletValue " + err.Error())
+		return shim.Error("penalCharges.cc: " + "Penal Interest Collection Loan Charges WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -209,13 +217,13 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	argsList = []string{"4PIC", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("penalCharges.cc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -229,7 +237,7 @@ func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Respon
 	fmt.Println("calling the txnbalcc chaincode from Interest Refund")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("penalCharges.cc: " + response.Message)
 	}
 	fmt.Println(string(response.Payload))
 	return shim.Success(nil)
@@ -273,13 +281,7 @@ func walletUpdation(stub shim.ChaincodeStubInterface, walletID string, amt int64
 	return shim.Success(nil)
 
 }
-func toChaincodeArgs(args ...string) [][]byte {
-	bargs := make([][]byte, len(args))
-	for i, arg := range args {
-		bargs[i] = []byte(arg)
-	}
-	return bargs
-}
+
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {

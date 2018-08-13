@@ -31,7 +31,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "newMarginInfo" {
 		return newMarginInfo(stub, args)
 	}
-	return shim.Error("no function named " + function + " found in Margin Refund")
+	return shim.Error("marginrefundcc: " + "no function named " + function + " found in Margin Refund")
 }
 
 func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -41,7 +41,7 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in newMarginInfo(Margin Refund) (required:10) given:" + xLenStr)
+		return shim.Error("marginrefundcc: " + "Invalid number of arguments in newMarginInfo(Margin Refund) (required:10) given:" + xLenStr)
 	}
 
 	/*
@@ -76,46 +76,46 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 	status := strings.Split(string(response.Payload), ",")[0]
 	if status != "collected" {
-		return shim.Error("loan status for loanID " + args[3] + " is not collected")
+		return shim.Error("marginrefundcc: " + "loan status for loanID " + args[3] + " is not collected")
 	}
 
 	//TXN Amt must be > Zero
 	if (amt < 0) || (amt == 0) {
-		return shim.Error("Transaction Amount in margin refund is less than or equal to zero")
+		return shim.Error("marginrefundcc: " + "Transaction Amount in margin refund is less than or equal to zero")
 	}
 
 	//Loan disbursed Wallet balance must be Zero
 	loanDisbursedWalletID, err := getWalletID(stub, "loancc", args[3], "disbursed")
 	if err != nil {
-		return shim.Error("Margin Refund loanDisbursedWalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanDisbursedWalletID " + err.Error())
 	}
 	loanDisbursedWalletValue, err := getWalletValue(stub, loanDisbursedWalletID)
 	if err != nil {
-		return shim.Error("Margin Refund loanDisbursedWalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanDisbursedWalletValue " + err.Error())
 	}
 
 	//Loan Charges Wallet balance must be Zero
 	loanChargesWalletID, err := getWalletID(stub, "loancc", args[3], "charges")
 	if err != nil {
-		return shim.Error("Margin Refund loanChargesWalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanChargesWalletID " + err.Error())
 	}
 	loanChargesWalletValue, err := getWalletValue(stub, loanChargesWalletID)
 	if err != nil {
-		return shim.Error("Margin Refund loanChargesWalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanChargesWalletValue " + err.Error())
 	}
 
 	// Loan Accrued Wallet balance must be Zero
 	loanAccruedWalletID, err := getWalletID(stub, "loancc", args[3], "accrued")
 	if err != nil {
-		return shim.Error("Margin Refund loanAccruedWalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanAccruedWalletID " + err.Error())
 	}
 	loanAccruedWalletValue, err := getWalletValue(stub, loanAccruedWalletID)
 	if err != nil {
-		return shim.Error("Margin Refund loanAccruedWalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund loanAccruedWalletValue " + err.Error())
 	}
 
 	if (loanDisbursedWalletValue + loanChargesWalletValue + loanAccruedWalletValue) != 0 {
@@ -134,19 +134,19 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 
 	walletID, err := getWalletID(stub, "businesscc", args[7], "main")
 	if err != nil {
-		return shim.Error("Margin Refund Business Main WalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Business Main WalletID " + err.Error())
 	}
 
 	openBalance, err := getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Margin Refund Business Main WalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Business Main WalletValue " + err.Error())
 	}
 	openBalString := strconv.FormatInt(openBalance, 10)
 	bal := openBalance + amt
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 	txnBalString := strconv.FormatInt(bal, 10)
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -155,7 +155,7 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	argsListStr := strings.Join(argsList, ",")
 	txnResponse := putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("marginrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -167,12 +167,12 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "main")
 	if err != nil {
-		return shim.Error("Margin Refund Bank Main WalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Bank Main WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Margin Refund Bank Main WalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Bank Main WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -183,13 +183,13 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 	argsList = []string{"2MR", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("marginrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -201,12 +201,12 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "liability")
 	if err != nil {
-		return shim.Error("Margin Refund Bank Refund_WalletID " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Bank Refund_WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Margin Refund Bank Refund_WalletValue " + err.Error())
+		return shim.Error("marginrefundcc: " + "Margin Refund Bank Refund_WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -217,13 +217,13 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 	argsList = []string{"3MR", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("marginrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -232,7 +232,7 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	chaincodeArgs = toChaincodeArgs("getSellerID", args[3])
 	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 
 	sellerID := string(response.Payload)
@@ -244,7 +244,7 @@ func newMarginInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 		chaincodeArgs := toChaincodeArgs("updateInsStatus", argsListStr)
 		response := stub.InvokeChaincode("instrumentcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
-			return shim.Error(response.Message)
+			return shim.Error("marginrefundcc: " + response.Message)
 		}
 	}
 
@@ -257,7 +257,7 @@ func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Respon
 	fmt.Println("calling the txnbalcc chaincode from Margin Refund")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("marginrefundcc: " + response.Message)
 	}
 	fmt.Println(string(response.Payload))
 	return shim.Success(nil)
@@ -271,7 +271,7 @@ func getWalletID(stub shim.ChaincodeStubInterface, ccName string, id string, wal
 	chaincodeArgs := toChaincodeArgs("getWalletID", id, walletType)
 	response := stub.InvokeChaincode(ccName, chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return "0", errors.New(response.Message)
+		return "0", errors.New("marginrefundcc: " + response.Message)
 	}
 	walletID := string(response.GetPayload())
 	return walletID, nil
@@ -283,7 +283,7 @@ func getWalletValue(stub shim.ChaincodeStubInterface, walletID string) (int64, e
 	walletArgs := toChaincodeArgs("getWallet", walletID)
 	walletResponse := stub.InvokeChaincode("walletcc", walletArgs, "myc")
 	if walletResponse.Status != shim.OK {
-		return 0, errors.New(walletResponse.Message)
+		return 0, errors.New("marginrefundcc: " + walletResponse.Message)
 	}
 	balString := string(walletResponse.Payload)
 	balance, _ := strconv.ParseInt(balString, 10, 64)
@@ -296,7 +296,7 @@ func walletUpdation(stub shim.ChaincodeStubInterface, walletID string, amt int64
 	walletArgs := toChaincodeArgs("updateWallet", walletID, txnBalString)
 	walletResponse := stub.InvokeChaincode("walletcc", walletArgs, "myc")
 	if walletResponse.Status != shim.OK {
-		return shim.Error(walletResponse.Message)
+		return shim.Error("marginrefundcc: " + walletResponse.Message)
 	}
 	return shim.Success(nil)
 

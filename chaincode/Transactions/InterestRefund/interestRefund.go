@@ -13,6 +13,14 @@ import (
 type chainCode struct {
 }
 
+func toChaincodeArgs(args ...string) [][]byte {
+	bargs := make([][]byte, len(args))
+	for i, arg := range args {
+		bargs[i] = []byte(arg)
+	}
+	return bargs
+}
+
 func (c *chainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
@@ -23,7 +31,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "newInterestInfo" {
 		return newInterestInfo(stub, args)
 	}
-	return shim.Error("no function named " + function + " found in Interest Refund")
+	return shim.Error("interestrefundcc: " + "no function named " + function + " found in Interest Refund")
 }
 
 func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -33,7 +41,7 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in newInterestInfo(Interest Refund) (required:10) given:" + xLenStr)
+		return shim.Error("interestrefundcc: " + "Invalid number of arguments in newInterestInfo(Interest Refund) (required:10) given:" + xLenStr)
 	}
 
 	/*
@@ -69,52 +77,52 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	status := strings.Split(string(response.Payload), ",")[0]
 	if status != "collected" {
-		return shim.Error("loan status for loanID " + args[3] + " is not collected")
+		return shim.Error("interestrefundcc: " + "loan status for loanID " + args[3] + " is not collected")
 	}
 
 	//TXN Amt must be > Zero
 	if (amt < 0) || (amt == 0) {
-		return shim.Error("Transaction Amount in Interest Refund is less than or equal to zero")
+		return shim.Error("interestrefundcc: " + "Transaction Amount in Interest Refund is less than or equal to zero")
 	}
 
 	//Loan disbursed Wallet balance must be Zero
 	loanDisbursedWalletID, err := getWalletID(stub, "loancc", args[3], "disbursed")
 	if err != nil {
-		return shim.Error("Interest Refund loanDisbursedWalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanDisbursedWalletID " + err.Error())
 	}
 	loanDisbursedWalletValue, err := getWalletValue(stub, loanDisbursedWalletID)
 	if err != nil {
-		return shim.Error("Interest Refund loanDisbursedWalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanDisbursedWalletValue " + err.Error())
 	}
 
 	//Loan Charges Wallet balance must be Zero
 	loanChargesWalletID, err := getWalletID(stub, "loancc", args[3], "charges")
 	if err != nil {
-		return shim.Error("Interest Refund loanChargesWalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanChargesWalletID " + err.Error())
 	}
 	loanChargesWalletValue, err := getWalletValue(stub, loanChargesWalletID)
 	if err != nil {
-		return shim.Error("Interest Refund loanChargesWalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanChargesWalletValue " + err.Error())
 	}
 
 	// Loan Accrued Wallet balance must be Zero
 	loanAccruedWalletID, err := getWalletID(stub, "loancc", args[3], "accrued")
 	if err != nil {
-		return shim.Error("Interest Refund loanAccruedWalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanAccruedWalletID " + err.Error())
 	}
 	loanAccruedWalletValue, err := getWalletValue(stub, loanAccruedWalletID)
 	if err != nil {
-		return shim.Error("Interest Refund loanAccruedWalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund loanAccruedWalletValue " + err.Error())
 	}
 
 	if (loanDisbursedWalletValue + loanChargesWalletValue + loanAccruedWalletValue) != 0 {
 
 		errString := fmt.Sprintf("The wallet values are not zero loanDisbursedWalletValue: %d; loanChargesWalletValue:%d ;loanAccruedWalletValue:%d", loanDisbursedWalletValue, loanChargesWalletValue, loanAccruedWalletValue)
-		return shim.Error(errString)
+		return shim.Error("interestrefundcc: " + errString)
 	}
 	//####################################################################################################################
 
@@ -127,19 +135,19 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	walletID, err := getWalletID(stub, "businesscc", args[7], "main")
 	if err != nil {
-		return shim.Error("Interest Refund Business Main WalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Business Main WalletID " + err.Error())
 	}
 
 	openBalance, err := getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Interest Refund Business Main WalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Business Main WalletValue " + err.Error())
 	}
 	openBalString := strconv.FormatInt(openBalance, 10)
 	bal := openBalance + amt
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	txnBalString := strconv.FormatInt(bal, 10)
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -148,7 +156,7 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	argsListStr := strings.Join(argsList, ",")
 	txnResponse := putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("interestrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -160,12 +168,12 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "main")
 	if err != nil {
-		return shim.Error("Interest Refund Bank Main WalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Main WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Interest Refund Bank Main WalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Main WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -176,13 +184,13 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	argsList = []string{"2IR", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("interestrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -194,12 +202,12 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "liability")
 	if err != nil {
-		return shim.Error("Interest Refund Bank Refund_WalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Refund_WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Interest Refund Bank Refund_WalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Refund_WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -210,13 +218,13 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	argsList = []string{"3IR", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("interestrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -228,12 +236,12 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	walletID, err = getWalletID(stub, "bankcc", args[6], "charges")
 	if err != nil {
-		return shim.Error("Interest Refund Bank Revenue/Charges WalletID " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Revenue/Charges WalletID " + err.Error())
 	}
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
-		return shim.Error("Interest Refund Bank Revenue/Charges WalletValue " + err.Error())
+		return shim.Error("interestrefundcc: " + "Interest Refund Bank Revenue/Charges WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
 
@@ -244,13 +252,13 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	argsList = []string{"4IR", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
 	txnResponse = putInTxnBal(stub, argsListStr)
 	if txnResponse.Status != shim.OK {
-		return shim.Error(txnResponse.Message)
+		return shim.Error("interestrefundcc: " + txnResponse.Message)
 	}
 
 	//####################################################################################################################
@@ -264,7 +272,7 @@ func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Respon
 	fmt.Println("calling the txnbalcc chaincode from Interest Refund")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("interestrefundcc: " + response.Message)
 	}
 	fmt.Println(string(response.Payload))
 	return shim.Success(nil)
@@ -308,16 +316,10 @@ func walletUpdation(stub shim.ChaincodeStubInterface, walletID string, amt int64
 	return shim.Success(nil)
 
 }
-func toChaincodeArgs(args ...string) [][]byte {
-	bargs := make([][]byte, len(args))
-	for i, arg := range args {
-		bargs[i] = []byte(arg)
-	}
-	return bargs
-}
+
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("Unable to start Interest Refund chaincode:", err)
+		fmt.Println("interestrefundcc: " + "Unable to start Interest Refund chaincode:", err)
 	}
 }

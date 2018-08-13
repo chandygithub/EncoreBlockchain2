@@ -72,7 +72,7 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//txnAmt > 0
 	txnAmt, _ := strconv.ParseInt(args[5], 10, 64)
 	if txnAmt <= 0 {
-		return shim.Error("charges.cc: txnAmt is zero or less")
+		return shim.Error("tds.cc: txnAmt is zero or less")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("tds.cc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -129,7 +129,7 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("tds.cc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -152,7 +152,7 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("tds.cc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -175,7 +175,7 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("tds.cc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -237,6 +237,6 @@ func getWalletInfo(stub shim.ChaincodeStubInterface, participantID string, walle
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("Unable to start the chaincode")
+		fmt.Println("tdscc: " + "Unable to start the chaincode")
 	}
 }

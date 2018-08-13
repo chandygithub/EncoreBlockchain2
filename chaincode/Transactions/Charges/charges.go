@@ -32,7 +32,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		//Creates new charges info
 		return newChargesInfo(stub, args)
 	}
-	return shim.Error("charges.cc: " + "no function named " + function + " found in charges")
+	return shim.Error("chargescc: " + "no function named " + function + " found in charges")
 }
 
 func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -41,7 +41,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	}
 	if len(args) != 10 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("charges.cc: " + "Invalid number of arguments in newChargesInfo(charges) (required:10) given:" + xLenStr)
+		return shim.Error("chargescc: " + "Invalid number of arguments in newChargesInfo(charges) (required:10) given:" + xLenStr)
 	}
 	/*
 	 *TxnType string    //args[1]
@@ -60,18 +60,18 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error("charges.cc: can't get loanStatus" + response.Message)
+		return shim.Error("chargescc: can't get loanStatus" + response.Message)
 	}
 	statusNamt := strings.Split(string(response.Payload), ",")
 	if statusNamt[0] != "sanctioned" && statusNamt[0] != "part disbursed" && statusNamt[0] != "disbursed" {
-		return shim.Error("charges.cc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed / disbursed")
+		return shim.Error("chargescc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed / disbursed")
 	}
 
 	//sancAmt, _ := strconv.ParseInt(statusNamt[0], 10, 64)
 	//txnAmt > 0
 	txnAmt, _ := strconv.ParseInt(args[5], 10, 64)
 	if txnAmt <= 0 {
-		return shim.Error("charges.cc: txnAmt is zero or less")
+		return shim.Error("chargescc: txnAmt is zero or less")
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err := getWalletInfo(stub, args[6], "charges", "bankcc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Bank Revenue Wallet(charges):" + err.Error())
+		return shim.Error("chargescc: " + "Bank Revenue Wallet(charges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -104,7 +104,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("chargescc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -117,7 +117,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[7], "chargesOut", "businesscc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Business Charges O/s Wallet(charges):" + err.Error())
+		return shim.Error("chargescc: " + "Business Charges O/s Wallet(charges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -127,7 +127,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("chargescc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
@@ -140,7 +140,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 
 	walletID, openBalString, txnBalString, err = getWalletInfo(stub, args[3], "charges", "loancc", cAmtString, dAmtString)
 	if err != nil {
-		return shim.Error("charges.cc: " + "Loan charges Wallet(charges):" + err.Error())
+		return shim.Error("chargescc: " + "Loan charges Wallet(charges):" + err.Error())
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
@@ -150,7 +150,7 @@ func newChargesInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("chargescc: " + response.Message)
 	}
 	fmt.Println(string(response.GetPayload()))
 
