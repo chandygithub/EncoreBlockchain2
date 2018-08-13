@@ -15,16 +15,17 @@ type chainCode struct {
 }
 
 type bankInfo struct {
-	BankName              string
-	BankBranch            string
-	Bankcode              string
-	BankWalletID          string //will take the values for the respective wallet from the user
-	BankAssetWalletID     string //will take the values for the respective wallet from the user
-	BankChargesWalletID   string //will take the values for the respective wallet from the user
-	BankLiabilityWalletID string //will take the values for the respective wallet from the user
-	TDSreceivableWalletID string //will take the values for the respective wallet from the user
+	BankName              string `json:"BankName"`
+	BankBranch            string `json:"BankBranch"`
+	Bankcode              string `json:"BankCode"`
+	BankWalletID          string `json:"MainWallet"`      //will take the values for the respective wallet from the user
+	BankAssetWalletID     string `json:"AssetWallet"`     //will take the values for the respective wallet from the user
+	BankChargesWalletID   string `json:"ChargesWallet"`   //will take the values for the respective wallet from the user
+	BankLiabilityWalletID string `json:"LiabilityWallet"` //will take the values for the respective wallet from the user
+	TDSreceivableWalletID string `json:"TDSWallet"`       //will take the values for the respective wallet from the user
 }
 
+// toChaincodeArgs returns byte arrau of string of arguments, so it can be passed to other chaincodes
 func toChaincodeArgs(args ...string) [][]byte {
 	bargs := make([][]byte, len(args))
 	for i, arg := range args {
@@ -66,8 +67,10 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 }
 
+// To write the bank info into the ledger
 func writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	//Checking argument length
 	if len(args) != 9 {
 		xLenStr := strconv.Itoa(len(args)) //needed?!
 		return shim.Error("Invalid number of arguments in writeBankInfo (required:9) given:" + xLenStr)
@@ -76,14 +79,14 @@ func writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	//Checking Bank ID existence
 	response := bankIDexists(stub, args[0])
 	if response.Status != shim.OK {
-		return shim.Error(response.Message)
+		return shim.Error("bankcc: " + response.Message)
 	}
 
 	//Checking existence of Bank code (!*!)
 	codeBranchIterator, err := stub.GetStateByPartialCompositeKey("Bankcode~BankBranch", []string{args[3]})
 	codeBranchData, err := codeBranchIterator.Next()
 	if codeBranchData != nil {
-		return shim.Error("Bank code already exist: " + args[3])
+		return shim.Error("bankcc : " + "Bank code already exist: " + args[3])
 	}
 	defer codeBranchIterator.Close()
 
@@ -126,7 +129,7 @@ func writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	TDSreceivableWalletIDsha := hex.EncodeToString(md)
 	createWallet(stub, TDSreceivableWalletIDsha, "1000")
 
-	//args[0] -> bankID
+	//args[0] -> bankID | creating a bank struct obj and writing it to the ledger
 	bank := bankInfo{args[1], args[2], args[3], BankWalletIDsha, BankAssetWalletIDsha, BankChargesWalletIDsha, BankLiabilityWalletIDsha, TDSreceivableWalletIDsha}
 	bankBytes, err := json.Marshal(bank)
 	if err != nil {
@@ -134,6 +137,9 @@ func writeBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	}
 
 	err = stub.PutState(args[0], bankBytes)
+	if err != nil {
+		return shim.Error("bankcc : " + err.Error())
+	}
 
 	return shim.Success([]byte("Succefully written into the ledger"))
 }
@@ -142,7 +148,7 @@ func bankIDexists(stub shim.ChaincodeStubInterface, bankID string) pb.Response {
 	ifExists, _ := stub.GetState(bankID)
 	if ifExists != nil {
 		fmt.Println(ifExists) //needed!?
-		return shim.Error("BankId " + bankID + " exits. Cannot create new ID")
+		return shim.Error("bankcc : " + "BankId " + bankID + " exits. Cannot create new ID")
 	}
 	return shim.Success(nil)
 }
@@ -152,7 +158,7 @@ func createWallet(stub shim.ChaincodeStubInterface, walletID string, amt string)
 	chaincodeArgs := toChaincodeArgs("newWallet", walletID, amt)
 	response := stub.InvokeChaincode("walletcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
-		return shim.Error("Unable to create new wallet from bank")
+		return shim.Error("bankcc : " + "Unable to create new wallet from bank")
 	}
 	return shim.Success([]byte("created new wallet from bank"))
 }
@@ -161,22 +167,24 @@ func getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in getBankInfo (required:1) given:" + xLenStr)
+		return shim.Error("bankcc : " + "Invalid number of arguments in getBankInfo (required:1) given:" + xLenStr)
 	}
 
+	// getting bank info from the ledger, args[0] -> bankID
 	bankInfoBytes, err := stub.GetState(args[0])
 
 	if err != nil {
-		return shim.Error("Unable to fetch the state" + err.Error())
+		return shim.Error("bankcc : " + "Unable to fetch the state" + err.Error())
 	}
 	if bankInfoBytes == nil {
-		return shim.Error("Data does not exist for " + args[0])
+		return shim.Error("bankcc : " + "Data does not exist for " + args[0])
 	}
 
+	// unmarshalling bankInfoBytes into bank structure
 	bank := bankInfo{}
 	err = json.Unmarshal(bankInfoBytes, &bank)
 	if err != nil {
-		return shim.Error("Uable to paser into the json format")
+		return shim.Error("bankcc : " + "Uable to paser into the json format")
 	}
 	x := fmt.Sprintf("%+v", bank)
 	fmt.Printf("BankInfo : %s\n", x)
@@ -186,19 +194,19 @@ func getBankInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 2 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("Invalid number of arguments in getWalletID(bank) (required:2) given:" + xLenStr)
+		return shim.Error("bankcc : " + "Invalid number of arguments in getWalletID(bank) (required:2) given:" + xLenStr)
 	}
 	bankInfoBytes, err := stub.GetState(args[0])
 	if err != nil {
-		return shim.Error("Unable to fetch the state" + err.Error())
+		return shim.Error("bankcc : " + "Unable to fetch the state" + err.Error())
 	}
 	if bankInfoBytes == nil {
-		return shim.Error("Data does not exist for " + args[0])
+		return shim.Error("bankcc : " + "Data does not exist for " + args[0])
 	}
 	bank := bankInfo{}
 	err = json.Unmarshal(bankInfoBytes, &bank)
 	if err != nil {
-		return shim.Error("Uable to paser into the json format")
+		return shim.Error("bankcc : " + "Uable to paser into the json format")
 	}
 
 	walletID := ""
@@ -222,7 +230,7 @@ func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Printf("Error starting Bank chaincode: %s\n", err)
+		fmt.Printf("bankcc : "+"Error starting Bank chaincode: %s\n", err)
 	}
 
 }
