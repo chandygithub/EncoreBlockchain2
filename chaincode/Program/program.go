@@ -16,7 +16,7 @@ type chainCode struct {
 
 type programInfo struct {
 	ProgramName        string    `json:"ProgramName"`        //[1]
-	ProgramAnchor      string    `json:"ProgramAnchor"`      //BusinessID //[2]
+	ProgramAnchor      string    `json:"ProgramAnchor"`      //[2]BusinessID
 	ProgramType        string    `json:"ProgramType"`        //[3]
 	ProgramStartDate   time.Time `json:"ProgramStartDate"`   //auto generated as created
 	ProgramEndDate     time.Time `json:"ProgramEndDate"`     //[4]
@@ -66,9 +66,9 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 11 {
+	if len(args) != 12 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("programcc: " + "Invalid number of arguments in writeProgram (required:11) given:" + xLenStr)
+		return shim.Error("programcc: " + "Invalid number of arguments in writeProgram (required:12) given:" + xLenStr)
 	}
 
 	//Checking existence of programID

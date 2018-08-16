@@ -1,8 +1,3 @@
-Register User:
-    enrollmentID:   user1
-    role        :   client
-    mspid       :   Org1MSP
-
 Query:
     chaincodeID :   
     fcn         :   
@@ -13,27 +8,3 @@ Invoke:
     fcn         :
     args        :
 ----------------------------------------------------------------------------------------------------------
-
-# creating bank cc:
-node invoke bankcc writeBankInfo 1bank kvb chennai 40A 2333s673sxx78 sdr3cfgtdui3 23rfs6vhj148b 897vhessety 86zs0lhtd
-
-# creating business cc:
-node invoke putNewBusinessInfo 1bus tata 12348901 4000000 23hhnx56s673sxx78 sdr32123d3 23rfs148b 12.4 8.09 0 1000000
-
-
-# creating wallets
-node invoke newWallet 23hhnx56s673sxx78 1000
-node invoke newWallet 23rfs148b 1000
-node invoke newWallet sdr32123d3 1000
-node invoke newWallet 2333s673sxx78 1000
-node invoke newWallet sdr3cfgtdui3 1000
-node invoke newWallet 23rfs6vhj148b 1000
-node invoke newWallet 897vhessety 1000
-node invoke newWallet 86zs0lhtd 1000
-
-# creating Loan
-node invoke newLoanInfo 1loan 1ins 1eb 1prg 900 23/04/2018:12:45:20 pragadeesh 5.6 23/10/2018 25/09/2018:20:45:01 sanctioned 900
-
-
-
-

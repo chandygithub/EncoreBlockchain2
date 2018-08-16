@@ -128,7 +128,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newRepayInfo", argsStr)
 		fmt.Println("calling the repayment chaincode")
-		response := stub.InvokeChaincode("repaycc", chaincodeArgs, "myc")
+		response := stub.InvokeChaincode("repaymentcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -150,8 +150,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newMarginInfo", argsStr)
-		fmt.Println("calling the marginrefundcc chaincode")
-		response := stub.InvokeChaincode("marginrefundcc", chaincodeArgs, "myc")
+		fmt.Println("calling the margin_refundcc chaincode")
+		response := stub.InvokeChaincode("margin_refundcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -173,8 +173,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newInterestInfo", argsStr)
-		fmt.Println("calling the interestrefundcc chaincode")
-		response := stub.InvokeChaincode("interestrefundcc", chaincodeArgs, "myc")
+		fmt.Println("calling the interest_refundcc chaincode")
+		response := stub.InvokeChaincode("interest_refundcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -196,8 +196,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newPICinfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the penal_interest_collectioncc chaincode")
+		response := stub.InvokeChaincode("penal_interest_collectioncc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -212,17 +212,16 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		fmt.Println("Successfully inserted penal interest collection transaction into the ledger")
 
 	//#######################################################################################################
-
-	case "loan sanction":
-		argsStr := strings.Join(args, ",")
-		/*{}*/
-		chaincodeArgs := toChaincodeArgs("newLoanSancInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
-		if response.Status != shim.OK {
-			return shim.Error("transactioncc: " + response.Message)
-		}
-
+	/*
+		case "loan sanction":
+			argsStr := strings.Join(args, ",")
+			chaincodeArgs := toChaincodeArgs("newLoanSancInfo", argsStr)
+			fmt.Println("calling the loan_sanctioncc chaincode")
+			response := stub.InvokeChaincode("loan_sanctioncc", chaincodeArgs, "myc")
+			if response.Status != shim.OK {
+				return shim.Error("transactioncc: " + response.Message)
+			}
+	*/
 	//#######################################################################################################
 
 	case "charges":
@@ -231,8 +230,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newChargesInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the chargescc chaincode")
+		response := stub.InvokeChaincode("chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -243,8 +242,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newInterestInAdvInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the interest_in_advancecc chaincode")
+		response := stub.InvokeChaincode("interest_in_advancecc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -256,8 +255,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newAccrualInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the accrualcc chaincode")
+		response := stub.InvokeChaincode("accrualcc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -269,8 +268,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newInterstAccruedInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the interest_accrued_chargescc chaincode")
+		response := stub.InvokeChaincode("interest_accrued_chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -282,8 +281,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newPenalChargesInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the penal_chargescc chaincode")
+		response := stub.InvokeChaincode("penal_chargescc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
@@ -296,8 +295,8 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newTDSInfo", argsStr)
-		fmt.Println("calling the piccc chaincode")
-		response := stub.InvokeChaincode("piccc", chaincodeArgs, "myc")
+		fmt.Println("calling the tdscc chaincode")
+		response := stub.InvokeChaincode("tdscc", chaincodeArgs, "myc")
 		if response.Status != shim.OK {
 			return shim.Error("transactioncc: " + response.Message)
 		}
