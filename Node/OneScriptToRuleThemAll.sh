@@ -16,6 +16,3 @@ echo "###########################"
 echo "Invoked necessary ledgers for handling txns"
 echo "###########################"
 node app.js
-echo "###########################" 
-echo "Server listening for get requests at localhost:3000"
-echo "###########################"

@@ -15,7 +15,7 @@ node invoke pprcc createPPR 1ppr 1prg 2bus seller 12000 3 100 5 40 34tf2
 node invoke instrumentcc enterInstrument 1ins 23/10/2018 2bus 1bus 1000 23/07/2019 1prg 1ppr 34 04/01/2018:12:43:59
 
 # creating loan
-node invoke loancc newLoanInfo 1loan 1ins 1bus 1prg 900 pragadeesh 5 23/10/2018 25/09/2018:20:45:01 sanctioned 0 0 0 1bus 2bus
+node invoke loancc newLoanInfo 1loan 1ins 1bus 1prg 900 pragadeesh 5 23/10/2018 25/09/2018:20:45:01 0 0 0 1bus 2bus
 
 
 # invoking disbursement transaction
