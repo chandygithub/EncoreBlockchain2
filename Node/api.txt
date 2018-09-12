@@ -1,0 +1,11 @@
+invoke JS query url
+
+localhost:3000/invoke?argumets=[]
+
+eg: 
+    http://localhost:3000/invoke?arguments=["loancc", "newLoanInfo", "1loan", "1ins", "1bus", "1prg", "900", "pragadeesh", "5", "23/10/2018", "25/09/2018:20:45:01", "sanctioned", "0", "0", "0", "1bus", "2bus"]
+
+
+query JS query url
+
+localhost:3000/query?argumets=[]
