@@ -51,22 +51,33 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//Validations
 	//Getting the sanction amount and the status
-	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
+	chaincodeArgs := toChaincodeArgs("getLoanStatus", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
+	if response.Status != shim.OK {
 		return shim.Error("disbursementcc: " + response.Message)
 	}
-	statusNamt := strings.Split(string(response.Payload), ",")
-	if (statusNamt[0] != "sanctioned") && (statusNamt[0] != "part disbursed") {
-		return shim.Error("disbursementcc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed")
+	status := string(response.Payload)
+	fmt.Println(status)
+	if (status != "sanctioned") && (status != "part disbursed") {
+		return shim.Error("disbursementcc: " + "loan status for loanID " + args[3] + " is not sanctioned / part disbursed")
 	}
 
-	sancAmt, _ := strconv.ParseInt(statusNamt[1], 10, 64)
+	//sancAmt, _ := strconv.ParseInt(statusNamt[1], 10, 64)
+	chaincodeArgs = toChaincodeArgs("getLoanSancAmt", args[3])
+	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
+	if response.Status != shim.OK {
+		return shim.Error("disbursementcc: " + response.Message)
+	}
+	sancAmt, err := strconv.ParseInt(string(response.Payload), 10, 64)
+	if err != nil {
+		return shim.Error("loancc: error parsing sancAmt")
+	}
+	fmt.Println(sancAmt)
 
 	//Getting the disbursed wallet
 	chaincodeArgs = toChaincodeArgs("getWalletID", args[3], "disbursed")
 	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
+	if response.Status != shim.OK {
 		return shim.Error("disbursementcc: " + response.Message)
 	}
 	walletid := string(response.Payload)
@@ -74,7 +85,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if err != nil {
 		return shim.Error("disbursementcc: " + err.Error())
 	}
-
+	//converting dibAmt to integer for testing
 	amtToBeDisburesed := sancAmt - disbAmt
 
 	amt, _ := strconv.ParseInt(args[5], 10, 64)
@@ -114,7 +125,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList := []string{"1", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr := strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -137,7 +148,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"2", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -160,7 +171,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"3", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -183,7 +194,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"4", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -206,7 +217,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"5", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -229,7 +240,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
 	argsList = []string{"5", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -243,7 +254,6 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//Calling Loan to change the status
 	//####################################################################################################################
 
-	var status string
 	if amtToBeDisburesed == 0 {
 		status = "disbursed"
 	} else if amtToBeDisburesed > 0 {
@@ -253,7 +263,7 @@ func newDisbInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//calling to change loan status
 	chaincodeArgs = toChaincodeArgs("updateLoanInfo", args[3], status, "disbursement")
 	response = stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
+	if response.Status != shim.OK {
 		return shim.Error("disbursementcc: " + response.Message)
 	}
 	return shim.Success(nil)

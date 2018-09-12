@@ -54,7 +54,6 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	 *SellID  string    //args[7]  Seller
 	 *BuyID	  string	//args[8]  Buyer
 	 *By      string    //args[9]
-	 *PprID   string    //args[10]
 	 */
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -486,7 +485,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Response {
 
-	chaincodeArgs := toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the txnbalcc chaincode from repayment")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {

@@ -73,10 +73,11 @@ func getWallet(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if err != nil {
 		return shim.Error("walletcc: " + err.Error())
 	}
-	balString := fmt.Sprintf("%+v", bal)
-	fmt.Printf("Wallet %s : %s\n", args[0], balString)
-
-	balStr := strconv.FormatFloat(bal.Balance, 'f', 4, 64)
+	//balString := fmt.Sprintf("%+v", bal)
+	//fmt.Printf("Wallet %s : %s\n", args[0], balString)
+	balInt := int64(bal.Balance)
+	balStr := strconv.FormatInt(balInt, 10)
+	fmt.Println(balStr)
 	return shim.Success([]byte(balStr))
 }
 

@@ -1,32 +1,32 @@
 invoke JS query url
 
-localhost:3000/invoke?argumets=[]
+localhost:3000/invoke?arguments=[]
 
 eg: 
     http://localhost:3000/invoke?arguments=["loancc", "newLoanInfo", "1loan", "1ins", "1bus", "1prg", "900", "pragadeesh", "5", "23/10/2018", "25/09/2018:20:45:01", "sanctioned", "0", "0", "0", "1bus", "2bus"]
 
 
 # creating bank:
-http://localhost:3000/invoke?argumets=["bankcc", "writeBankInfo", "1bank", "kvb", "chennai", "40A", "1000", "1000", "1000", "1000", "1000"]
+http://localhost:3000/invoke?arguments=["bankcc", "writeBankInfo", "1bank", "kvb", "chennai", "40A", "1000", "1000", "1000", "1000", "1000"]
 
 # creating business:
-http://localhost:3000/invoke?argumets=["businesscc", "putNewBusinessInfo", "1bus", "tata", "12348901", "4000000", "1000", "1000", "1000", "12", "8", "1000", "1000"]
-http://localhost:3000/invoke?argumets=["businesscc", "putNewBusinessInfo", "2bus", "mrf", "12348902", "4000000", "1000", "1000", "1000", "12", "8", "1000", "1000"]
+http://localhost:3000/invoke?arguments=["businesscc", "putNewBusinessInfo", "1bus", "tata", "12348901", "4000000", "1000", "1000", "1000", "12", "8", "1000", "1000"]
+http://localhost:3000/invoke?arguments=["businesscc", "putNewBusinessInfo", "2bus", "mrf", "12348902", "4000000", "1000", "1000", "1000", "12", "8", "1000", "1000"]
 
 # creating Program
-http://localhost:3000/invoke?argumets=["programcc", "writeProgram", "1prg", "program1", "1bus", "Accounts_Payable", "10/04/2019", "10000", "6", "buyer", "4", "100", "pragadeesh", "123452"]
+http://localhost:3000/invoke?arguments=["programcc", "writeProgram", "1prg", "program1", "1bus", "Accounts_Payable", "10/04/2019", "10000", "6", "buyer", "4", "100", "pragadeesh", "123452"]
 
 # creating PPR
-http://localhost:3000/invoke?argumets=["pprcc", "createPPR", "1ppr", "1prg", "2bus", "seller", "12000", "3", "100", "5", "40", "34tf2"]
+http://localhost:3000/invoke?arguments=["pprcc", "createPPR", "1ppr", "1prg", "2bus", "seller", "12000", "3", "100", "5", "40", "34tf2"]
 
 # cerating instrument
-http://localhost:3000/invoke?argumets=["instrumentcc" , "enterInstrument" , "1ins" , "23/10/2018" , "2bus" , "1bus" , "1000" , "23/07/2019" , "1prg" , "1ppr" , "34" , "04/01/2018:12:43:59"]  
+http://localhost:3000/invoke?arguments=["instrumentcc" , "enterInstrument" , "1ins" , "23/10/2018" , "2bus" , "1bus" , "1000" , "23/07/2019" , "1prg" , "1ppr" , "34" , "04/01/2018:12:43:59"]  
 
 # creating loan
-http://localhost:3000/invoke?argumets=["loancc" , "newLoanInfo" , "1loan" , "1ins" , "1bus" , "1prg" , "900" , "pragadeesh" , "5" , "23/10/2018" , "25/09/2018:20:45:01" , "0", "0", "0", "1bus" , "2bus"]
+http://localhost:3000/invoke?arguments=["loancc" , "newLoanInfo" , "1loan" , "1ins" , "1bus" , "1prg" , "900" , "pragadeesh" , "5" , "23/10/2018" , "25/09/2018:20:45:01" , "0", "0", "0", "1bus" , "2bus"]
 
 # invoking disbursement transaction
-http://localhost:3000/invoke?argumets=["txncc", "newTxnInfo", "1txn", "disbursement" , "23/04/2018" , "1loan" , "1inst" , "300" , "1bank" , "1bus" , "pragadeesh" , "v7b9h" ] 
+http://localhost:3000/invoke?arguments=["txncc", "newTxnInfo", "1txn", "disbursement", "23/04/2018", "1loan", "1inst", "300", "1bank", "1bus", "pragadeesh"] 
 
 # invoking accrual transaction
 
@@ -85,4 +85,4 @@ http://localhost:3000/invoke?arguments=["newTxnInfo","1txn","repayment","23/04/2
 
 query JS query url
 
-localhost:3000/query?argumets=[]
+localhost:3000/query?arguments=[]

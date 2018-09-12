@@ -63,6 +63,8 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "updateInstrumentStatus" { //instrumentStatus
 		//Updates instrument status accordingly
 		return updateInstrumentStatus(stub, args)
+	} else if function == "getInstrumentAmt" {
+		return getInstrumentAmt(stub, args)
 	}
 
 	return shim.Error("instrumetcc: " + "No function named " + function + " in Instrumentsssss")
@@ -85,17 +87,17 @@ func enterInstrument(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	defer refNoSellIDiterator.Close()
 
 	//Checking existence of ProgramID
-	chaincodeArgs := toChaincodeArgs("programIDexists", args[7])
+	chaincodeArgs := toChaincodeArgs("programIDexists", args[6])
 	response := stub.InvokeChaincode("programcc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error("instrumetcc: " + "ProgramId " + args[7] + " does not exits")
+		return shim.Error("instrumetcc: " + "ProgramId " + args[6] + " does not exits")
 	}
 
 	//Checking existence of pprID
-	chaincodeArgs = toChaincodeArgs("pprIDexists", args[8])
+	chaincodeArgs = toChaincodeArgs("pprIDexists", args[7])
 	response = stub.InvokeChaincode("pprcc", chaincodeArgs, "myc")
 	if response.Status == shim.OK {
-		return shim.Error("instrumetcc: " + "PprId " + args[8] + " does not exits")
+		return shim.Error("instrumetcc: " + "PprId " + args[7] + " does not exits")
 	}
 
 	//Checking existence of SellerBusinessID
@@ -160,14 +162,19 @@ func enterInstrument(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 func updateInstrumentStatus(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	args = strings.Split(args[0], ",")
 	/*
 		args[0] -> instrument reference number
 		args[1] -> seller ID
 		args[2] -> status
 	*/
 	key := strings.ToLower(args[0] + args[1])
-	instBytes, err := stub.GetState(key)
+	hash := sha256.New()
+	instID := strings.ToLower(key)
+	hash.Write([]byte(instID))
+	md := hash.Sum(nil)
+	instIDsha := hex.EncodeToString(md)
+
+	instBytes, err := stub.GetState(instIDsha)
 	if err != nil {
 		return shim.Error("instrumetcc: " + "Unable to fetch instrument info for status updation")
 	}
@@ -183,7 +190,7 @@ func updateInstrumentStatus(stub shim.ChaincodeStubInterface, args []string) pb.
 		return shim.Error("instrumetcc: " + "Instrument status cannot be sanctioned as it is not open")
 	} else if (args[2] == "overdue") && (inst.InsStatus != "sanctioned") {
 		return shim.Error("instrumetcc: " + "Instrument status cannot be overdue as it is not sanctioned")
-	} else if (args[2] == "settled") && ((inst.InsStatus != "overdue") || (inst.InsStatus != "sanctioned")) {
+	} else if (args[2] == "settled") && ((inst.InsStatus != "overdue") && (inst.InsStatus != "sanctioned")) {
 		return shim.Error("instrumetcc: " + "Instrument status cannot be settled as it is not overdue or sanctioned")
 	}
 	inst.InsStatus = args[2]
@@ -217,10 +224,54 @@ func getInstrument(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 		return shim.Error("instrumetcc: " + "No data exists on this InstrumentID: " + args[0])
 	}
 
+	//ins := instrumentInfo{}
+	//err = json.Unmarshal(insBytes, &ins)
+	//insString := fmt.Sprintf("%+v", ins)
+	return shim.Success(nil)
+}
+
+func getInstrumentAmt(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 2 {
+		return shim.Error("invalid no. of arguments (requiered 2)")
+	}
+
+	/*fmt.Println("before refNoSellIDiterator")
+	refNoSellIDiterator, err := stub.GetStateByPartialCompositeKey("InstrumentRefNo~SellBusinessID~InsAmount", args)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	fmt.Println("before refNoSellIDiterator")
+	refNoSellIDdata, err := refNoSellIDiterator.Next()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	//fmt.Println(refNoSellIDdata.Key)
+	_, insAmt, err := stub.SplitCompositeKey(refNoSellIDdata.Key)
+	if err != nil {
+		return shim.Error("Error splitting the composite key " + err.Error())
+	}
+	fmt.Println(insAmt)
+	*/
+	hash := sha256.New()
+	instID := strings.ToLower(args[0] + args[1])
+	hash.Write([]byte(instID))
+	md := hash.Sum(nil)
+	instIDsha := hex.EncodeToString(md)
+
+	insBytes, err := stub.GetState(instIDsha)
+	if err != nil {
+		return shim.Error(err.Error())
+	} else if insBytes == nil {
+		return shim.Error("No data exists on this InstrumentID: " + instIDsha)
+	}
+
 	ins := instrumentInfo{}
 	err = json.Unmarshal(insBytes, &ins)
-	insString := fmt.Sprintf("%+v", ins)
-	return shim.Success([]byte(insString))
+	if err != nil {
+		return shim.Error("Cannot unmarshal json")
+	}
+
+	return shim.Success([]byte(ins.InsAmount))
 }
 
 func main() {

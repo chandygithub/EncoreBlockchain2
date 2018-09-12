@@ -20,10 +20,10 @@ type transactionInfo struct {
 	LoanID  string    `json:"LoanID"`       //args[3]
 	InsID   string    `json:"InstrumentID"` //args[4]
 	Amt     int64     `json:"TxnAmount"`    //args[5]
-	FromID  string    `json:"From"`         //???
-	ToID    string    `json:"To"`           //???
-	By      string    `json:"By"`           //args[7]
-	PprID   string    `json:"PPR_ID"`       //args[8]
+	FromID  string    `json:"From"`         //args[6]
+	ToID    string    `json:"To"`           //args[7]
+	By      string    `json:"By"`           //args[8]
+	//PprID   string    `json:"PPR_ID"`
 }
 
 func toChaincodeArgs(args ...string) [][]byte {
@@ -54,21 +54,21 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 9 {
 		xLenStr := strconv.Itoa(len(args))
-		return shim.Error("transactioncc: " + "Invalid number of arguments in newTxnInfo(transactions) (required:10) given: " + xLenStr)
+		return shim.Error("transactioncc: " + "Invalid number of arguments in newTxnInfo(transactions) (required:9) given: " + xLenStr)
 	}
 
 	tTypeValues := map[string]bool{
 		"disbursement":              true,
 		"repayment":                 true,
-		"margin refund":             true,
-		"interest refund":           true,
-		"penal interest collection": true,
-		"loan sanction":             true,
+		"margin_refund":             true,
+		"interest_refund":           true,
+		"penal_interest_collection": true,
+		"loan_sanction":             true,
 		"charges":                   true,
-		"interest in advance":       true,
+		"interest_in_advance":       true,
 		"accrual":                   true,
-		"interest accrued charges":  true,
-		"penal charges":             true,
+		"interest_accrued_charges":  true,
+		"penal_charges":             true,
 		"TDS":                       true,
 	}
 
@@ -108,7 +108,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 			return shim.Error("transactioncc: " + response.Message)
 		}
 
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8]}
 		fmt.Println(transaction)
 
 		txnBytes, err := json.Marshal(transaction)
@@ -124,7 +124,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		//seller -> bank
 		sellerID = getSellerID(stub, args[3])
 		buyerID = getBuyerID(stub, args[3])
-		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[7], args[8]}
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[7], sellerID, buyerID, args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newRepayInfo", argsStr)
 		fmt.Println("calling the repayment chaincode")
@@ -133,7 +133,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 			return shim.Error("transactioncc: " + response.Message)
 		}
 
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, sellerID, args[6], args[7], args[8]}
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8]}
 		fmt.Println(transaction)
 		txnBytes, err := json.Marshal(transaction)
 		err = stub.PutState(args[0], txnBytes)
@@ -156,7 +156,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 			return shim.Error("transactioncc: " + response.Message)
 		}
 
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8]}
 		fmt.Println(transaction)
 		txnBytes, err := json.Marshal(transaction)
 		err = stub.PutState(args[0], txnBytes)
@@ -179,7 +179,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 			return shim.Error("transactioncc: " + response.Message)
 		}
 
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], sellerID, args[7], args[8]}
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8]}
 		fmt.Println(transaction)
 		txnBytes, err := json.Marshal(transaction)
 		err = stub.PutState(args[0], txnBytes)
@@ -202,7 +202,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 			return shim.Error("transactioncc: " + response.Message)
 		}
 
-		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, sellerID, args[6], args[7], args[8]}
+		transaction := transactionInfo{tTypeLower, tDate, args[3], args[4], amt, args[6], args[7], args[8]}
 		fmt.Println(transaction)
 		txnBytes, err := json.Marshal(transaction)
 		err = stub.PutState(args[0], txnBytes)

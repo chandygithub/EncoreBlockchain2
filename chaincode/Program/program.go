@@ -88,8 +88,8 @@ func writeProgram(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		"ar":                  true,
 		"ap":                  true,
 		"df":                  true,
-		"accounts payable":    true,
-		"accounts receivable": true,
+		"accounts_payable":    true,
+		"accounts_receivable": true,
 		"dealer finance":      true,
 	}
 

@@ -68,16 +68,18 @@ func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	txnTypeValues := map[string]bool{
-		"loan Sanction":          true,
-		"disbursement":           true,
-		"charges":                true,
-		"repayment / collection": true,
-		"margin refund":          true,
-		"interest refund":        true,
-		"tds":                    true,
-		"penal charges":          true,
-		"cersai carges":          true,
-		"factor regn charges":    true,
+		"disbursement":              true,
+		"repayment":                 true,
+		"margin_refund":             true,
+		"interest_refund":           true,
+		"penal_interest_collection": true,
+		"loan_sanction":             true,
+		"charges":                   true,
+		"interest_in_advance":       true,
+		"accrual":                   true,
+		"interest_accrued_charges":  true,
+		"penal_charges":             true,
+		"TDS":                       true,
 	}
 
 	txnTypeLower := strings.ToLower(args[7])

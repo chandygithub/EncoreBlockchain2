@@ -103,10 +103,10 @@ func createPPR(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	relationship := map[string]bool{
-		"Seller": true,
-		"Vendor": true,
-		"Buyer":  true,
-		"Dealer": true,
+		"seller": true,
+		"vendor": true,
+		"buyer":  true,
+		"dealer": true,
 	}
 
 	relationshipLower := strings.ToLower(args[3])
