@@ -18,26 +18,33 @@ node invoke instrumentcc enterInstrument 1ins 23/10/2018 2bus 1bus 1000 23/07/20
 node invoke loancc newLoanInfo 1loan 1ins 1bus 1prg 900 pragadeesh 5 23/10/2018 25/09/2018:20:45:01 0 0 0 1bus 2bus
 
 # invoking disbursement transaction
-#node invoke txncc newTxnInfo 1txn disbursement 23/04/2018 1loan 1inst 300 1bank 1bus pragadeesh
+node invoke txncc newTxnInfo 1txn disbursement 23/04/2018 1loan 1inst 300 1bank 1bus pragadeesh
 
 # invoking accrual transaction
+# node invoke txncc newTxnInfo 2txn accrual 23/04/2018 1loan 1inst 800 1bus 1bank pragadeesh
 
 # invoking charges transaction
+# node invoke txncc newTxnInfo 2txn charges 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking interest_accrued_charge transaction
 
 # invoking interest_in_advance transaction
+# node invoke txncc newTxnInfo 2txn interest_in_advance 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking interest_refund transaction
+# node invoke txncc newTxnInfo 2txn interest_refund 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking margin_refund transaction
+# node invoke txncc newTxnInfo 2txn margin_refund 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking penal_charges transaction
+# node invoke txncc newTxnInfo 2txn penal_charges 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking penal_interest_collection transaction
+# node invoke txncc newTxnInfo 2txn penal_interest_collection 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh
 
 # invoking repayment transaction
-# node invoke txncc newTxnInfo 1txn repayment 23/04/2018 1loan 1inst 800 1bus 1bank pragadeesh 
+node invoke txncc newTxnInfo 2txn repayment 23/04/2018 1loan 1inst 800 1bus 1bank pragadeesh 
 
 # invoking tds transaction
-
+#node invoke txncc newTxnInfo 2txn TDS 23/04/2018 1loan 1inst 800 1bank 1bus pragadeesh 

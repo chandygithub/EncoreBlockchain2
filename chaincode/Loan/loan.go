@@ -429,8 +429,8 @@ func updateLoanInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response
 		return shim.Success([]byte("sanction updated succesfully"))
 
 	} else if (args[1] == "repayment") && ((args[2] == "collected") || (args[2] == "part collected")) {
-		if loan.LoanStatus != "disbursed" {
-			return shim.Error("loancc: " + "Loan is not Sanctioned, so cannot be disbursed")
+		if (loan.LoanStatus != "disbursed") && (loan.LoanStatus != "part disbursed") {
+			return shim.Error("loancc: " + "Loan is not disbursed or part disbursed, so cannot be repayed")
 		}
 		//Updating Loan status for repayment
 		loan.LoanStatus = args[2]

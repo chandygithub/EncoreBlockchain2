@@ -53,19 +53,18 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	 *seller  string    //args[7]
 	 *buyer	  string	//args[8]
 	 *By      string    //args[9]
-	 *PprID   string    //args[10]
 	 */
 
 	//Validations
 	//Getting the sanction amount and the status
-	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
+	chaincodeArgs := toChaincodeArgs("getLoanStatus", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
-		return shim.Error("tds.cc: can't get loanStatus" + response.Message)
+	if response.Status != shim.OK {
+		return shim.Error("interestrefundcc: can't get loanStatus" + response.Message)
 	}
-	statusNamt := strings.Split(string(response.Payload), ",")
-	if statusNamt[0] != "overdue" {
-		return shim.Error("tds.cc: " + "loan status for loanID " + args[3] + " is not Sanctioned / part disbursed / disbursed")
+	status := string(response.Payload)
+	if status != "overdue" {
+		return shim.Error("tds.cc: " + "loan status for loanID " + args[3] + " is not Overdue")
 	}
 
 	//sancAmt, _ := strconv.ParseInt(statusNamt[0], 10, 64)
@@ -100,9 +99,9 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList := []string{"1", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
+	argsList := []string{"1tds", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
 	argsListStr := strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -123,9 +122,9 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"2", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
+	argsList = []string{"2tds", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -146,9 +145,9 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"3", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
+	argsList = []string{"3tds", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -169,9 +168,9 @@ func newTDSInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	// STEP-4 generate txn_balance_object and write it to the Txn_Bal_Ledger
-	argsList = []string{"2", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
+	argsList = []string{"4tds", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[9]}
 	argsListStr = strings.Join(argsList, ",")
-	chaincodeArgs = toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs = toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the other chaincode")
 	response = stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {

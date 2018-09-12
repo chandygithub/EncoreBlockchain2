@@ -40,7 +40,7 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "getTxnBalInfo" { // To view a Business information
 		return c.getTxnBalInfo(stub, args)
 	}
-	return shim.Error("txnbalcc: " + "Inside txnBalcc:Invoke(), Function does not exit")
+	return shim.Error("txnbalcc: " + "Inside txnBalcc:Invoke(), Function does not exit" + function)
 }
 
 func (c *chainCode) putTxnBalInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {

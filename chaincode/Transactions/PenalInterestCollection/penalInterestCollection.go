@@ -73,19 +73,19 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//Validations
 
-	// Must be Existing Loan with Status as Collected
-	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
+	// Must be Existing Loan with Status as Overdue
+	chaincodeArgs := toChaincodeArgs("getLoanStatus", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
-		return shim.Error("penalCharges.cc: " + response.Message)
+	if response.Status != shim.OK {
+		return shim.Error("penalChargescc: can't get loanStatus" + response.Message)
 	}
-	status := strings.Split(string(response.Payload), ",")[0]
+	status := string(response.Payload)
 	if status != "overdue" {
 		return shim.Error("penalCharges.cc: " + "loan status for loanID " + args[3] + " is not overdue")
 	}
 
 	//TXN Amt must be > Zero
-	if (amt < 0) || (amt == 0) {
+	if amt <= 0 {
 		return shim.Error("penalCharges.cc: " + "Transaction Amount in Penal Interest Collectionis less than or equal to zero")
 	}
 
@@ -233,7 +233,7 @@ func newPICinfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Response {
 
-	chaincodeArgs := toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the txnbalcc chaincode from Interest Refund")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {

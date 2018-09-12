@@ -170,7 +170,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 
 	//Loan Disbursed Wallet balance
-	loanDisbursedWalletID, err := getWalletID(stub, "loancc", args[6], "disbursed")
+	loanDisbursedWalletID, err := getWalletID(stub, "loancc", args[3], "disbursed")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment loanDisbursedWalletID " + err.Error())
 	}
@@ -190,7 +190,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	//Bank Asset Wallet
-	walletID, err = getWalletID(stub, "bankcc", args[7], "asset")
+	walletID, err = getWalletID(stub, "bankcc", args[6], "asset")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Bank Asset WalletID " + err.Error())
 	}
@@ -222,7 +222,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	dAmtString = "0"
-	walletID, err = getWalletID(stub, "bankcc", args[7], "liability")
+	walletID, err = getWalletID(stub, "bankcc", args[6], "liability")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletID " + err.Error())
 	}
@@ -305,7 +305,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	cAmtString = "0"
-	walletID, err = getWalletID(stub, "businesscc", args[6], "interestOut")
+	walletID, err = getWalletID(stub, "businesscc", args[7], "chargesOut")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Business Charges/Interest O/s WalletID " + err.Error())
 	}
@@ -337,7 +337,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	cAmtString = "0"
-	walletID, err = getWalletID(stub, "businesscc", args[6], "principalOut")
+	walletID, err = getWalletID(stub, "businesscc", args[7], "principalOut")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Business Principal O/s WalletID " + err.Error())
 	}
@@ -364,32 +364,38 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if txnResponse.Status != shim.OK {
 		return shim.Error("repaymentcc: " + txnResponse.Message)
 	}
-
+	fmt.Println("0")
 	//####################################################################################################################
 	//Calling for updating Loan Charges Wallet
 	//####################################################################################################################
 
 	cAmtString = "0"
-	walletID, err = getWalletID(stub, "loan", args[3], "charges")
+	walletID, err = getWalletID(stub, "loancc", args[3], "charges")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Loan Charges WalletID " + err.Error())
 	}
+	fmt.Println("1")
 
 	openBalance, err = getWalletValue(stub, walletID)
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Loan Charges WalletValue " + err.Error())
 	}
 	openBalString = strconv.FormatInt(openBalance, 10)
+	fmt.Println("2")
 
 	bal = openBalance - loanChargesWalletValue
 	txnBalString = strconv.FormatInt(bal, 10)
+	fmt.Println("3")
 
 	response = walletUpdation(stub, walletID, bal)
 	if response.Status != shim.OK {
 		return shim.Error("repaymentcc: " + "Repayment Loan Charges Wallet " + response.Message)
 	}
+	fmt.Println("4")
+
 	dAmt = loanChargesWalletValue
 	dAmtString = strconv.FormatInt(dAmt, 10)
+	fmt.Println("5")
 
 	argsList = []string{"8rep", args[0], args[2], args[3], args[4], walletID, openBalString, args[1], args[5], cAmtString, dAmtString, txnBalString, args[8]}
 	argsListStr = strings.Join(argsList, ",")
@@ -403,7 +409,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//####################################################################################################################
 
 	cAmtString = "0"
-	walletID, err = getWalletID(stub, "loan", args[3], "disbursed")
+	walletID, err = getWalletID(stub, "loancc", args[3], "disbursed")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Loan Disbursed WalletID " + err.Error())
 	}
@@ -452,7 +458,7 @@ func newRepayInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	cAmtString = "0"
 	dAmtString = args[5]
 
-	walletID, err = getWalletID(stub, "business", args[6], "liability")
+	walletID, err = getWalletID(stub, "businesscc", args[8], "liability")
 	if err != nil {
 		return shim.Error("repaymentcc: " + "Repayment Bank Liability WalletID " + err.Error())
 	}

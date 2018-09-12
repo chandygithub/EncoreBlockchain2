@@ -74,18 +74,20 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	//Validations
 
 	// Must be Existing Loan with Status as Collected
-	chaincodeArgs := toChaincodeArgs("loanStatusSancAmt", args[3])
+	//Validations
+
+	chaincodeArgs := toChaincodeArgs("getLoanStatus", args[3])
 	response := stub.InvokeChaincode("loancc", chaincodeArgs, "myc")
-	if response.Status == shim.OK {
-		return shim.Error("interestrefundcc: " + response.Message)
+	if response.Status != shim.OK {
+		return shim.Error("interestrefundcc: can't get loanStatus" + response.Message)
 	}
-	status := strings.Split(string(response.Payload), ",")[0]
+	status := string(response.Payload)
 	if status != "collected" {
 		return shim.Error("interestrefundcc: " + "loan status for loanID " + args[3] + " is not collected")
 	}
 
 	//TXN Amt must be > Zero
-	if (amt < 0) || (amt == 0) {
+	if amt <= 0 {
 		return shim.Error("interestrefundcc: " + "Transaction Amount in Interest Refund is less than or equal to zero")
 	}
 
@@ -268,7 +270,7 @@ func newInterestInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 
 func putInTxnBal(stub shim.ChaincodeStubInterface, argsListStr string) pb.Response {
 
-	chaincodeArgs := toChaincodeArgs("putTxnInfo", argsListStr)
+	chaincodeArgs := toChaincodeArgs("putTxnBalInfo", argsListStr)
 	fmt.Println("calling the txnbalcc chaincode from Interest Refund")
 	response := stub.InvokeChaincode("txnbalcc", chaincodeArgs, "myc")
 	if response.Status != shim.OK {
@@ -320,6 +322,6 @@ func walletUpdation(stub shim.ChaincodeStubInterface, walletID string, amt int64
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {
-		fmt.Println("interestrefundcc: " + "Unable to start Interest Refund chaincode:", err)
+		fmt.Println("interestrefundcc: "+"Unable to start Interest Refund chaincode:", err)
 	}
 }

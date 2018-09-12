@@ -69,7 +69,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		"accrual":                   true,
 		"interest_accrued_charges":  true,
 		"penal_charges":             true,
-		"TDS":                       true,
+		"tds":                       true,
 	}
 
 	//Converting into lower case for comparison
@@ -144,7 +144,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "margin refund":
+	case "margin_refund":
 		//bank -> seller
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
@@ -167,7 +167,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "interest refund":
+	case "interest_refund":
 		//bank -> seller
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
@@ -190,7 +190,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "penal interest collection":
+	case "penal_interest_collection":
 		//seller -> bank
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
@@ -213,7 +213,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 	/*
-		case "loan sanction":
+		case "loan_sanction":
 			argsStr := strings.Join(args, ",")
 			chaincodeArgs := toChaincodeArgs("newLoanSancInfo", argsStr)
 			fmt.Println("calling the loan_sanctioncc chaincode")
@@ -237,7 +237,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		}
 
 	//#######################################################################################################
-	case "interest in advance":
+	case "interest_in_advance":
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
@@ -263,7 +263,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "interest accrued charges":
+	case "interest_accrued_charges":
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
@@ -276,7 +276,7 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "penal charges":
+	case "penal_charges":
 		sellerID = getSellerID(stub, args[3])
 		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, args[7], args[8]}
 		argsStr := strings.Join(txnArgs, ",")
@@ -289,10 +289,10 @@ func newTxnInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	//#######################################################################################################
 
-	case "TDS":
+	case "tds":
 		sellerID = getSellerID(stub, args[3])
 		buyerID = getBuyerID(stub, args[3])
-		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[7], args[8]}
+		txnArgs := []string{args[0], args[1], args[2], args[3], args[4], args[5], args[6], sellerID, buyerID, args[8]}
 		argsStr := strings.Join(txnArgs, ",")
 		chaincodeArgs := toChaincodeArgs("newTDSInfo", argsStr)
 		fmt.Println("calling the tdscc chaincode")
