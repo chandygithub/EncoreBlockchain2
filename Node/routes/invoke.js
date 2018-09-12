@@ -171,9 +171,8 @@ router.get('/', function (req, res) {
 		console.error('Failed to invoke successfully :: ' + err);
 	});
 
-
 	res.send('Successfully posted')
 })
 
 
-module.exports = router
+module.exports = router;

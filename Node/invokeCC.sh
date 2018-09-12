@@ -18,7 +18,7 @@ node invoke instrumentcc enterInstrument 1ins 23/10/2018 2bus 1bus 1000 23/07/20
 node invoke loancc newLoanInfo 1loan 1ins 1bus 1prg 900 pragadeesh 5 23/10/2018 25/09/2018:20:45:01 0 0 0 1bus 2bus
 
 # invoking disbursement transaction
-# node invoke txncc newTxnInfo 1txn disbursement 23/04/2018 1loan 1inst 300 1bank 1bus pragadeesh v7b9h
+node invoke txncc newTxnInfo 1txn disbursement 23/04/2018 1loan 1inst 300 1bank 1bus pragadeesh
 
 # invoking accrual transaction
 
@@ -37,6 +37,7 @@ node invoke loancc newLoanInfo 1loan 1ins 1bus 1prg 900 pragadeesh 5 23/10/2018 
 # invoking penal_interest_collection transaction
 
 # invoking repayment transaction
+#node invoke txncc newTxnInfo 1txn repayment 23/04/2018 1loan 1inst 800 1bus 1bank pragadeesh 1ppr
 
 # invoking tds transaction
 

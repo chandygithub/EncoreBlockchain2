@@ -7,3 +7,4 @@ app.use('/invoke', invoke);
 app.use('/query', query);
 
 app.listen(3000);
+console.log("app listening at localhost:3000");
