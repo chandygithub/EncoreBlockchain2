@@ -189,7 +189,7 @@ func getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	}
 	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
 	fmt.Printf("Business Info: %s\n", jsonString)
-	return shim.Success(jsonString)
+	return shim.Success([]byte(jsonString))
 }
 
 func bisIDexists(stub shim.ChaincodeStubInterface, bisID string) pb.Response {
