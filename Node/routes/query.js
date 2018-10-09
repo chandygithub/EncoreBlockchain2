@@ -94,7 +94,12 @@ router.get('/', function (req, res) {
 			if (query_responses[0] instanceof Error) {
 				console.error("Error from query = ", query_responses[0]);
 			} else {
-				console.log("Response is ", query_responses[0].toString('utf-8'));
+			//	console.log("Response is ", query_responses.toString());
+			for(let i = 0; i < query_responses.length; i++) {
+				console.log(util.format('Query result from peer [%s]: %s', i, query_responses[i].toString('utf8')));
+			}
+			console.log(util.format('Query result from peer  %s',  query_responses[0].toString('ascii')));
+			//query_responses[0].
 			}
 		} else {
 			console.log("No payloads were returned from query");

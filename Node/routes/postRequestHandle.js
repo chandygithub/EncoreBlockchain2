@@ -147,7 +147,7 @@ var fcn_args = myArgs.slice(2);**/
 		if (isProposalGood) {
 			//console.log("resp payload  "+ blockdecoder.decodeProposalResponsePayload(proposalResponses[0].payload));
 			console.log(util.format(
-				'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s",payload - %j',
+				'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s",payload - %s',
 				proposalResponses[0].response.status, proposalResponses[0].response.message,proposalResponses[0].payload));
 				//console.log("payload response"+proposalResponses[0].payload);
 			// build up the request for the orderer to have the transaction committed
