@@ -295,6 +295,30 @@ func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success([]byte(walletID))
 }
 
+//query getbusinessQuery  method
+func getBusinessInfoQuery(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		xLenStr := strconv.Itoa(len(args))
+		return shim.Error("businesscc: " + "Invalid number of arguments in getBusinessInfo (required:1) given:" + xLenStr)
+	}
+
+	parsedBusinessInfo := businessInfo{}
+	businessIDvalue, err := stub.GetState(args[0])
+	if err != nil {
+		return shim.Error("businesscc: " + "Failed to get the business information: " + err.Error())
+	} else if businessIDvalue == nil {
+		return shim.Error("businesscc: " + "No information is avalilable on this businessID " + args[0])
+	}
+
+	err = json.Unmarshal(businessIDvalue, &parsedBusinessInfo)
+	if err != nil {
+		return shim.Error("businesscc: " + "Unable to parse businessInfo into the structure " + err.Error())
+	}
+	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
+	fmt.Printf("Business Info: %s\n", jsonString)
+	return shim.Success([]byte(parsedBusinessInfo))
+}
+
 func main() {
 	err := shim.Start(new(chainCode))
 	if err != nil {

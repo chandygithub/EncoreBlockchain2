@@ -4,7 +4,7 @@ var url = require('url');
 
 
 // define the home page route
-router.post('/', function (req, res) {
+router.get('/', function (req, res) {
 	'use strict';
 	'use strict';
 	/*
@@ -17,11 +17,17 @@ router.post('/', function (req, res) {
 	 */
 	var url_parts = url.parse(req.url, true);
 	var query = url_parts.query;
-	var myArgs = JSON.parse(query.arguments);
-	var fcn_args = myArgs.slice(2);
+//	var data = req.body;
 
-	console.log(myArgs[0] + myArgs[1]);
-	console.log(fcn_args);
+	//console.log("data"+JSON.stringify(data));
+	//console.log("data"+JSON.parse(data));
+	//var myArgs = JSON.parse(query.arguments);
+	var myArgs = JSON.parse(query.arguments);
+	console.log("myArgs "+myArgs);
+	var fcn_args = myArgs.slice(2);
+	
+	console.log("Arguments " + myArgs[0] + myArgs[1]);
+	console.log("fcn_args "+fcn_args);
 
 	var Fabric_Client = require('fabric-client');
 	var path = require('path');
@@ -68,6 +74,9 @@ router.post('/', function (req, res) {
 
 		// queryCar chaincode function - requires 1 argument, ex: args: ['CAR4'],
 		// queryAllCars chaincode function - requires no arguments , ex: args: [''],
+		console.log("myArgs[0] "+myArgs[0]);
+		console.log("myArgs[1] "+myArgs[1]);
+		console.log("fcn_args "+fcn_args);
 		const request = {
 			//targets : --- letting this default to the peers assigned to the channel
 			chaincodeId: myArgs[0],
@@ -77,23 +86,28 @@ router.post('/', function (req, res) {
 
 		// send the query proposal to the peer
 		return channel.queryByChaincode(request);
-	}).then((query_responses) => {
+	})
+/**	.then((query_responses) => {
 		console.log("Query has completed, checking results");
 		// query_responses could have more than one  results if there multiple peers were used as targets
 		if (query_responses && query_responses.length == 1) {
 			if (query_responses[0] instanceof Error) {
-				console.error("error from query = ", query_responses[0]);
+				console.error("Error from query = ", query_responses[0]);
 			} else {
 				console.log("Response is ", query_responses[0].toString());
 			}
 		} else {
 			console.log("No payloads were returned from query");
-		}
+		} */
+
+	.then((response_payloads) => {
+		console.log("length is "+response_payloads[0].length)
+        for(let i = 0; i < response_payloads.length; i++) {
+            console.log(util.format(' Query result from peer  %s ',  response_payloads[i].toString('utf8')));
+        }    
 	}).catch((err) => {
 		console.error('Failed to query successfully :: ' + err);
 	});
 
 });
-
-
 module.exports = router;
