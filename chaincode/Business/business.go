@@ -320,7 +320,8 @@ func getBusinessInfoQuery(stub shim.ChaincodeStubInterface, args []string) pb.Re
 	}
 	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
 	fmt.Printf("Business Info: %s\n", jsonString)
-	return shim.Success([]byte(parsedBusinessInfo))
+	return shim.Success([]byte(string(json.Marshal(parsedBusinessInfo))));
+	//return shim.Success([]byte(parsedBusinessInfo))
 }
 
 func main() {
