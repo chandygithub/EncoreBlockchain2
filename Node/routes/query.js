@@ -81,7 +81,8 @@ router.get('/', function (req, res) {
 			//targets : --- letting this default to the peers assigned to the channel
 			chaincodeId: myArgs[0],
 			fcn: myArgs[1],
-			args: fcn_args
+			//args: fcn_args
+			args: ['']
 		};
 
 		// send the query proposal to the peer
@@ -91,14 +92,17 @@ router.get('/', function (req, res) {
 		console.log("Query has completed, checking results");
 		// query_responses could have more than one  results if there multiple peers were used as targets
 		if (query_responses && query_responses.length == 1) {
+			//console.log(""+query_responses.);
 			if (query_responses[0] instanceof Error) {
 				console.error("Error from query = ", query_responses[0]);
 			} else {
 			//	console.log("Response is ", query_responses.toString());
 			for(let i = 0; i < query_responses.length; i++) {
 				console.log(util.format('Query result from peer [%s]: %s', i, query_responses[i].toString('utf8')));
+				console.log('Query result from peer [%s]: %s', query_responses[i].toString('utf8'));
+				//console.log('Query result from peer ', JSON.parse(query_responses[i].toString('utf8')));
 			}
-			console.log(util.format('Query result from peer  %s',  query_responses[0].toString('ascii')));
+			//console.log(util.format('Query result from peer  %s',  JSON.parse(query_responses[0].toString('ascii'))));
 			//query_responses[0].
 			}
 		} else {
