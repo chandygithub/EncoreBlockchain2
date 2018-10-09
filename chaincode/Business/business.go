@@ -189,10 +189,6 @@ func getBusinessInfo(stub shim.ChaincodeStubInterface, args []string) pb.Respons
 	}
 	jsonString := fmt.Sprintf("%+v", parsedBusinessInfo)
 	fmt.Printf("Business Info: %s\n", jsonString)
-<<<<<<< HEAD
-	//return shim.Success([]byte(string(json.Marshal(parsedBusinessInfo))))
-=======
->>>>>>> 0e897a54f19e6a4a8d380e2a03ba39313a216836
 	return shim.Success([]byte(parsedBusinessInfo))
 }
 
@@ -295,6 +291,14 @@ func getWalletID(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success([]byte(walletID))
 }
 
+func (c *chainCode) Query(stub shim.ChaincodeStubInterface) pb.Response {
+	function, args := stub.GetFunctionAndParameters()
+
+	if function == "getBusinessInfoQuery" {
+		//Return the Response payload JSON
+		return getBusinessInfoQuery(stub, args)
+	}
+}
 //query getbusinessQuery  method
 func getBusinessInfoQuery(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
