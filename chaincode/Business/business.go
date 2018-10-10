@@ -322,7 +322,7 @@ func getBusinessInfoQuery(stub shim.ChaincodeStubInterface, args []string) pb.Re
 	fmt.Printf("Business Info: %s\n", jsonString)
 	//return shim.Success([]byte(string(json.Marshal(parsedBusinessInfo))));
 	//return shim.Success([]byte(parsedBusinessInfo))
-	return shim.Success([]byte(parsedBusinessInfo);
+	return shim.Success([]byte string((parsedBusinessInfo));
 }
 
 func main() {

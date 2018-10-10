@@ -151,6 +151,13 @@ var fcn_args = myArgs.slice(2);**/
 				proposalResponses[0].response.status, proposalResponses[0].response.message,proposalResponses[0].payload));
 				//console.log("payload response"+proposalResponses[0].payload);
 			// build up the request for the orderer to have the transaction committed
+			console.log(
+				'Successfully sent Proposal and received ProposalResponse wo util.format: Status - %s, message - "%s",payload - %s',
+				proposalResponses[0].response.status, proposalResponses[0].response.message,proposalResponses[0].payload);
+				console.log(util.format(
+					'Successfully sent Proposal and received ProposalResponse wrong util format: Status - %s, message - "%s",payload - %j',
+					proposalResponses[0].response.status, proposalResponses[0].response.message,proposalResponses[0].payload));
+	
 			var request = {
 				proposalResponses: proposalResponses,
 				proposal: proposal

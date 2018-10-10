@@ -96,9 +96,10 @@ router.get('/', function (req, res) {
 			if (query_responses[0] instanceof Error) {
 				console.error("Error from query = ", query_responses[0]);
 			} else {
-			//	console.log("Response is ", query_responses.toString());
+				//console.log("Response is resolve json parse", (JSON.parse(query_responses[0].toString('utf8'))));
 			for(let i = 0; i < query_responses.length; i++) {
-				console.log(util.format('Query result from peer [%s]: %s', i, query_responses[i].toString('utf8')));
+				console.log(util.format('Query result from peer [%s]: %s', i, JSON.parse(query_responses[i].toString('utf8'))));
+				console.log(util.format('Query result from peer [%s]: %s', i, query_responses[i].toString()));
 				console.log('Query result from peer [%s]: %s', query_responses[i].toString('utf8'));
 				//console.log('Query result from peer ', JSON.parse(query_responses[i].toString('utf8')));
 			}
