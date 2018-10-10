@@ -81,8 +81,8 @@ router.get('/', function (req, res) {
 			//targets : --- letting this default to the peers assigned to the channel
 			chaincodeId: myArgs[0],
 			fcn: myArgs[1],
-			//args: fcn_args
-			args: ['']
+			args: fcn_args
+			//args: ['']
 		};
 
 		// send the query proposal to the peer
@@ -90,6 +90,7 @@ router.get('/', function (req, res) {
 	})
 	.then((query_responses) => {
 		console.log("Query has completed, checking results");
+		console.log('query resp'+JSON.parse(query_responses));
 		// query_responses could have more than one  results if there multiple peers were used as targets
 		if (query_responses && query_responses.length == 1) {
 			//console.log(""+query_responses.);
