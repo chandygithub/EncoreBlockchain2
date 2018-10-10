@@ -68,6 +68,10 @@ func (c *chainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		//Updates Business Limit / MAX ROI / MAX ROI if required
 		return updateBusinessInfo(stub, args)
 	}
+	else if function == "getBusinessInfoQuery" {
+		//Return the Response payload JSON
+		return getBusinessInfoQuery(stub, args)
+	}
 	return shim.Error("businesscc: " + "No function named " + function + " in Businessssssss")
 }
 
@@ -322,7 +326,7 @@ func getBusinessInfoQuery(stub shim.ChaincodeStubInterface, args []string) pb.Re
 	fmt.Printf("Business Info: %s\n", jsonString)
 	//return shim.Success([]byte(string(json.Marshal(parsedBusinessInfo))));
 	//return shim.Success([]byte(parsedBusinessInfo))
-	return shim.Success(parsedBusinessInfo);
+	return shim.Success(businessIDvalue);
 }
 
 func main() {

@@ -90,7 +90,7 @@ router.get('/', function (req, res) {
 	})
 	.then((query_responses) => {
 		console.log("Query has completed, checking results");
-		console.log('query resp'+JSON.parse(query_responses));
+		//console.log('query resp'+JSON.parse(query_responses));
 		// query_responses could have more than one  results if there multiple peers were used as targets
 		if (query_responses && query_responses.length == 1) {
 			//console.log(""+query_responses.);
@@ -99,7 +99,7 @@ router.get('/', function (req, res) {
 			} else {
 				//console.log("Response is resolve json parse", (JSON.parse(query_responses[0].toString('utf8'))));
 			for(let i = 0; i < query_responses.length; i++) {
-				console.log(util.format('Query result from peer [%s]: %s', i, JSON.parse(query_responses[i].toString('utf8'))));
+				//console.log(util.format('Query result from peer [%s]: %s', i, JSON.parse(query_responses[i].toString('utf8'))));
 				console.log(util.format('Query result from peer [%s]: %s', i, query_responses[i].toString()));
 				console.log('Query result from peer [%s]: %s', query_responses[i].toString('utf8'));
 				//console.log('Query result from peer ', JSON.parse(query_responses[i].toString('utf8')));
